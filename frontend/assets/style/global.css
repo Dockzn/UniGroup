@@ -1,0 +1,10 @@
+        :root {
+            --primary-color: #003566; /* Azul Google */
+            --secondary-color: yellow; /* Verde Google */
+            --background-color: rgb(226, 226, 226); /* Cinza claro */
+            --card-color: #ffffff; /* Branco */
+            --text-color: #202124; /* Cinza escuro quase preto */
+            --border-color: #dadce0; /* Cinza claro para bordas */
+            --section-title-color: #5f6368; /* Cinza médio */
+            --font: 'Inter', sans-serif; /* Fonte Inter */
+        }
