@@ -1,0 +1,31 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore node_modules (caso use futuramente)
+node_modules/
+
+# Logs
+*.log
+
+# Build / dist folders (caso compile algo no futuro)
+dist/
+build/
+
+# Cache do navegador e IDEs
+.cache/
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos temporários
+*.tmp
+*.swp
+
+# Arquivos de ambiente (caso use variáveis)
+.env
+.env.local
+
+# Pasta de deploy/gerada automaticamente
+public/

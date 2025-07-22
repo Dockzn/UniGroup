@@ -15,12 +15,11 @@
   height: 60px;
 }
 
-.navbar-logo {
+.navbar-logo img {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 100px;
 }
 
 .navbar-logo i,

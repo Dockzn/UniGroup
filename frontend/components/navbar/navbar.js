@@ -5,7 +5,7 @@ function criarNavbar() {
   navbar.innerHTML = `
     <div class="navbar-container">
       <div class="navbar-logo">
-        <img src="../../assets/images/Logo Unigroup.png" alt="Logo Unigroup">
+        <img src="../../assets/images/logo-unigroup.png" alt="Logo Unigroup">
       </div>
       <div class="navbar-links">
         <input type="text" placeholder="Pesquisar projeto ou equipe" class="search-input">
