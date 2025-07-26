@@ -38,9 +38,30 @@
                 return;
             }
             
-            // Simulate login process
-            console.log('Login attempt:', { email, password });
-            alert('Funcionalidade de login ainda não implementada. Dados enviados para o console.');
+            // Login process
+            fetch('https://unigroup.onrender.com/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    // Salva o token e dados do usuário
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    // Redireciona para a página inicial
+                    window.location.href = '../inicio/inicio.html';
+                } else {
+                    alert(data.message || 'Erro ao fazer login');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao conectar com o servidor');
+            });
         });
 
         // Input focus effects
@@ -65,5 +86,5 @@
 
         document.querySelector('.signup-link').addEventListener('click', function(e) {
             e.preventDefault();
-            alert('Funcionalidade de cadastro ainda não implementada.');
+            window.location.href = '../cadastro/cadastro.html';
         });
