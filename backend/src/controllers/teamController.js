@@ -2,6 +2,81 @@ const db = require('../../sequelize/models');
 const { v4: uuidv4 } = require('uuid');
 
 const teamController = {
+    addMemberByEmail: async (req, res) => {
+        try {
+            const { teamId } = req.params;
+            const { email } = req.body;
+            const requesterId = req.user.id;
+
+            // Verificar se o email foi fornecido
+            if (!email) {
+                return res.status(400).json({ message: 'Email é obrigatório' });
+            }
+
+            // Verificar se o usuário existe
+            const userToAdd = await db.User.findOne({ where: { email } });
+            if (!userToAdd) {
+                return res.status(404).json({ message: 'Usuário não encontrado' });
+            }
+
+            // Verificar se a equipe existe e se o solicitante tem permissão
+            const team = await db.Team.findOne({
+                include: [{
+                    model: db.User,
+                    as: 'members',
+                    through: { attributes: ['role'] },
+                    where: { id: requesterId }
+                }],
+                where: { id: teamId }
+            });
+
+            if (!team) {
+                return res.status(404).json({ message: 'Equipe não encontrada' });
+            }
+
+            // Verificar se o solicitante tem permissão (owner ou admin)
+            const requesterRole = team.members[0].UserTeams.role;
+            if (requesterRole !== 'owner' && requesterRole !== 'admin') {
+                return res.status(403).json({ message: 'Sem permissão para adicionar membros' });
+            }
+
+            // Verificar se o usuário já é membro da equipe
+            const existingMember = await db.UserTeams.findOne({
+                where: {
+                    teamId,
+                    userId: userToAdd.id
+                }
+            });
+
+            if (existingMember) {
+                return res.status(400).json({ message: 'Usuário já é membro da equipe' });
+            }
+
+            // Adicionar o usuário à equipe
+            await db.UserTeams.create({
+                teamId,
+                userId: userToAdd.id,
+                role: 'member'
+            });
+
+            // Retornar os dados do membro adicionado
+            res.json({
+                success: true,
+                member: {
+                    id: userToAdd.id,
+                    name: userToAdd.name,
+                    email: userToAdd.email,
+                    role: 'member'
+                }
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: 'Erro ao adicionar membro',
+                error: error.message
+            });
+        }
+    },
+
     removeMember: async (req, res) => {
         try {
             const { teamId, userId } = req.params;

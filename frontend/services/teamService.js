@@ -96,6 +96,24 @@ async function listTeams() {
     }
 }
 
+async function addMemberByEmail(teamId, email) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/api/teams/${teamId}/members/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ email })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao adicionar membro:', error);
+        throw error;
+    }
+}
+
 async function joinTeam(inviteCode) {
     try {
         const token = localStorage.getItem('token');
@@ -120,5 +138,6 @@ export const teamService = {
     removeMember,
     leaveTeam,
     getTeamMembers,
-    getTeamDetails
+    getTeamDetails,
+    addMemberByEmail
 };

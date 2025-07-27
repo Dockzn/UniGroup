@@ -98,8 +98,44 @@ body {
   background-color: rgb(226, 226, 226);
     height: 300px;
   width: 30%;
-
 }
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.input-group input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.input-group button {
+  padding: 8px 16px;
+  background-color: #003566;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#mensagem-adicao {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+#mensagem-adicao.sucesso {
+  color: green;
+}
+
+#mensagem-adicao.erro {
+  color: red;
+}
+
+
 
 .colum2 {
   height: 100%;
