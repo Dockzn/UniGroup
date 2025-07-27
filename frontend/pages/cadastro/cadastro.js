@@ -1,3 +1,6 @@
+// Importar o serviço de autenticação
+import { authService } from '../../services/authService.js';
+
 // Toggle password visibility
 const togglePassword = document.getElementById('togglePassword');
 const passwordField = document.getElementById('senha');
@@ -52,21 +55,13 @@ cadastroForm.addEventListener('submit', function (e) {
         return;
     }
 
-    // Register process
-    fetch('https://unigroup.onrender.com/api/auth/register', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            name: nome,
-            email: email,
-            password: senha
-        })
-    })
-        .then(response => response.json())
+    // Register process using authService
+    authService.register(nome, email, senha)
         .then(data => {
-            if (data.token) {
+            if (data.message && data.message.includes('sucesso')) {
+                alert('Cadastro realizado com sucesso! Faça login para continuar.');
+                window.location.href = '../login/login.html';
+            } else if (data.token) {
                 // Salva o token e dados do usuário
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
