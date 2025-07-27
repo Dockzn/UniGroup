@@ -2,16 +2,186 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quadro</title>
-  <link rel="stylesheet" href="quadro.css" />
-  <link rel="stylesheet" href="../../components/navbar/navbar.css" />
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projeto - UniGroup</title>
+    <link rel="stylesheet" href="../../assets/style/global.css" />
+    <link rel="stylesheet" href="quadro.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../../components/navbar/navbar.css" />
+    <script src="../../services/protectionScript.js"></script>
+
+
 </head>
 
 <body>
+    <header></header>
+    <!-- Header do Projeto -->
+    <section class="project-header">
+        <div class="project-header-container">
+            <div class="project-info">
+                <h1 class="project-title">Desenvolvimento Web</h1>
+            </div>
+            <div class="project-actions">
+                <button class="btn-favorite"><i class="fas fa-star"></i></button>
+                <button class="btn-filter"><i class="fas fa-filter"></i></button>
+                <button class="btn-share">
+                    <i class="fas fa-share"></i> Compartilhar
+                </button>
+                <button class="btn-members" id="btnMembers">
+                    <i class="fas fa-users"></i> Membros
+                </button>
+                <button class="btn-create-list">
+                    <i class="fas fa-plus"></i> Criar nova lista
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Board -->
+    <main class="board-container">
+        <div class="board" id="board">
+            <!-- Colunas serão inseridas dinamicamente aqui -->
+        </div>
+    </main>
+
+    <!-- Modal para visualizar atividade -->
+    <div class="modal" id="viewActivityModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="viewActivityTitle">Detalhes da Atividade</h3>
+                <span class="close" id="closeViewModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="view-section">
+                    <label>Descrição:</label>
+                    <div id="viewActivityDescription" class="view-content">-</div>
+                </div>
+
+                <div class="view-section">
+                    <label>Lista:</label>
+                    <div id="viewActivityList" class="view-content">-</div>
+                </div>
+
+                <div class="view-section">
+                    <label>Membros Atribuídos:</label>
+                    <div id="viewActivityMembers" class="view-content">-</div>
+                </div>
+
+                <div class="view-section">
+                    <label>Data:</label>
+                    <div id="viewActivityDate" class="view-content">-</div>
+                </div>
+
+                <div class="view-section">
+                    <label>Prioridade:</label>
+                    <div id="viewActivityPriority" class="view-content">-</div>
+                </div>
+
+                <div class="view-section">
+                    <label>Status:</label>
+                    <div id="viewActivityStatus" class="view-content">-</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-edit" id="editFromViewBtn">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button type="button" class="btn-delete" id="deleteFromViewBtn">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar/editar atividade -->
+    <div class="modal" id="activityModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="activityModalTitle">Nova Atividade</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <form id="activityForm">
+                <div class="form-group">
+                    <label for="activityTitle">Título da Atividade</label>
+                    <input type="text" id="activityTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="activityDescription">Descrição</label>
+                    <textarea id="activityDescription" rows="3" placeholder="Descreva a atividade..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="activityList">Lista</label>
+                    <select id="activityList" required>
+                        <!-- Opções serão inseridas dinamicamente -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Usuários Atribuídos</label>
+                    <div id="activityUsersContainer" class="users-grid-container">
+                        <!-- Chips de usuários serão inseridos dinamicamente -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="activityDate">Data</label>
+                    <input type="date" id="activityDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="activityPriority">Prioridade</label>
+                    <select id="activityPriority">
+                        <option value="">Nenhuma</option>
+                        <option value="baixa">Baixa</option>
+                        <option value="media">Média</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn-save" id="saveActivityBtn">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para nova/editar lista -->
+    <div class="modal" id="listModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="listModalTitle">Nova Lista</h3>
+                <span class="close" id="closeListModal">&times;</span>
+            </div>
+            <form id="listForm">
+                <div class="form-group">
+                    <label for="listTitle">Nome da Lista</label>
+                    <input type="text" id="listTitle" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelListBtn">Cancelar</button>
+                    <button type="submit" class="btn-save" id="saveListBtn">Criar Lista</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Popup de Membros -->
+    <div class="members-popup" id="membersPopup">
+        <div class="members-popup-header">
+            <h4>Membros do Projeto</h4>
+            <button class="members-popup-close" id="closeMembersPopup">&times;</button>
+        </div>
+        <div class="members-popup-content" id="membersPopupContent">
+            <!-- Membros serão inseridos dinamicamente -->
+        </div>
+    </div>
+
+    <script type="module" src="../../components/navbar/navbar.js"></script>
+
+    <script src="quadro.js"></script>
 
 </body>
 

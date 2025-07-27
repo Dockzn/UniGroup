@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const header = document.querySelector('header');
   const navbar = criarNavbar();
   header.appendChild(navbar);
-  
+
   const logoElement = navbar.querySelector('.navbar-logo img');
   if (logoElement) {
     logoElement.addEventListener('click', () => {
