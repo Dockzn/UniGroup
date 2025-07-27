@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tela Inicial</title>
+  <link rel="stylesheet" href="equipes.css" />
+  <link rel="stylesheet" href="../../components/navbar/navbar.css" />
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body>
+  <!-- Navbar -->
+  <header></header>
+
+  <main>
+    <div class="container">
+      <div class="colum1">
+        <div class="container-menu">
+          <ul class="menu">
+            <button class="item-menu">
+              <li class="itens-menu">
+                <i class="fa-solid fa-list-check"></i> Quadro
+              </li>
+            </button>
+            <button class="item-menu">
+              <li class="itens-menu">
+                <i class="fa-solid fa-handshake"></i> Projetos
+              </li>
+            </button>
+            <button class="item-menu">
+              <li class="itens-menu">
+                <i class="fa-solid fa-users"></i> Equipes
+              </li>
+            </button>
+          </ul>
+        </div>
+      </div>
+
+      <div class="colum2">
+        <div class="equipes">
+          <h1><i class="fa-solid fa-user-group"></i> Equipes</h1>
+
+          <div class="card-equipe" id="card-equipe">
+            <h3>Total de membros (<span id="total-membros">0</span>)</h3>
+            <ul id="lista-membros"></ul>
+
+            <div class="convite-container">
+              <h4>Convide novos membros</h4>
+              <p>Utilize o link para convidar novos colaboradores para sua equipe.</p>
+              <button id="botao-convidar">📋 Copiar link</button>
+              <span id="mensagem-copiado" style="display: none; color: green;">Link copiado!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../components/navbar/navbar.js" defer></script>
+  <script src="equipes.js" defer></script>
+</body>
+
+</html>
