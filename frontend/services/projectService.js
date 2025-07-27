@@ -1,8 +1,7 @@
 // Funções de API
 import { authService } from './authService.js';
 
-// Para alternar entre ambiente local e remoto, mude a  IS_LOCAL
-const IS_LOCAL = false; // Definido como false para usar o servidor remoto
+const IS_LOCAL = false;
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 
 async function createProject(teamId, name, description, dueDate) {
@@ -70,10 +69,25 @@ async function toggleArchive(projectId) {
     }
 }
 
-// Exporta as funções
+async function getUserProjects() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/api/projects/user`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao obter projetos do usuário:', error);
+        throw error;
+    }
+}
+
 export const projectService = {
     createProject,
     listProjects,
     toggleFavorite,
-    toggleArchive
+    toggleArchive,
+    getUserProjects
 };

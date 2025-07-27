@@ -7,11 +7,20 @@
   <title>Tela Inicial</title>
   <link rel="stylesheet" href="equipes.css" />
   <link rel="stylesheet" href="../../components/navbar/navbar.css" />
+  <link rel="stylesheet" href="../../assets/style/modal.css" />
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 </head>
 
 <body>
+
+  <div id="nao-autorizado" style="display:none;color:red;text-align:center;font-weight:bold;margin-top:2em;">Acesso não autorizado. Faça login para acessar esta página.</div>
+  <script>
+    if (!localStorage.getItem('usuarioLogado')) {
+      document.body.innerHTML = document.getElementById('nao-autorizado').outerHTML;
+    }
+  </script>
+
   <!-- Navbar -->
   <header></header>
 
@@ -25,11 +34,6 @@
                 <i class="fa-solid fa-list-check"></i> Quadro
               </li>
             </button>
-            <button class="item-menu" onclick="window.location.href='../projetos/projetos.html'">
-              <li class="itens-menu">
-                <i class="fa-solid fa-handshake"></i> Projetos
-              </li>
-            </button>
             <button class="item-menu" onclick="window.location.href='../equipes/equipes.html'">
               <li class="itens-menu">
                 <i class="fa-solid fa-users"></i> Equipes
@@ -41,13 +45,28 @@
 
       <div class="colum2">
         <div class="equipes">
+
           <h1><i class="fa-solid fa-user-group"></i> Equipes</h1>
+          <div id="minha-equipe-info" style="margin:1em 0 2em 0;padding:1em;background:#f7faff;border-radius:8px;box-shadow:0 1px 4px #0001;display:none">
+            <h2 style="margin:0 0 0.5em 0;font-size:1.2em;color:#2d7be5;">Minha equipe</h2>
+            <div id="minha-equipe-nome" style="font-weight:bold;"></div>
+            <div id="minha-equipe-membros" style="margin-top:0.5em;"></div>
+          </div>
 
           <div class="card-equipe" id="card-equipe">
             <h3>Total de membros (<span id="total-membros">0</span>)</h3>
             <ul id="lista-membros"></ul>
+            
 
             <div class="convite-container">
+                <div class="criar-equipe-container" style="max-width:500px;margin:2em auto 0 auto;padding:1em 2em;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0001;">
+                  <h2 style="margin-top:0"><i class="fa-solid fa-plus"></i> Criar nova equipe</h2>
+                  <div style="display:flex;gap:1em;align-items:center;">
+                    <input type="text" id="nomeEquipe" placeholder="Nome da equipe" style="flex:1;padding:0.5em;border-radius:4px;border:1px solid #ccc;">
+                    <button id="criarEquipeBtn" style="padding:0.5em 1.2em;background:#2d7be5;color:#fff;border:none;border-radius:4px;cursor:pointer;">Criar</button>
+                  </div>
+                  <span id="msgCriarEquipe" style="display:none;margin-left:0.5em;"></span>
+                </div>
               <div class="adicionar-email">
                 <h4>Adicionar membro por e-mail</h4>
                 <div class="input-group">
@@ -70,6 +89,7 @@
     </div>
   </main>
 
+  <script type="module" src="../../components/projectModal.js"></script>
   <script type="module" src="../../components/navbar/navbar.js"></script>
   <script type="module" src="equipes.js"></script>
 </body>

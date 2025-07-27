@@ -1,9 +1,7 @@
 import { teamService } from '../../services/teamService.js';
 import { authService } from '../../services/authService.js';
+import { projectService } from '../../services/projectService.js';
 
-// Não há mais verificação de autenticação
-
-// Obtém dados do usuário logado
 const currentUser = authService.getCurrentUser();
 
 async function loadUserTeams() {
@@ -25,7 +23,6 @@ async function loadUserTeams() {
                 teamContainer.appendChild(teamCard);
             });
             
-            // Adicionar event listeners para os botões de visualização
             document.querySelectorAll('.view-team-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     const teamId = button.getAttribute('data-team-id');
@@ -51,7 +48,6 @@ async function loadUserTeams() {
     }
 }
 
-// Função para mostrar boas-vindas ao usuário
 function showWelcomeMessage() {
     const welcomeContainer = document.createElement('div');
     welcomeContainer.className = 'welcome-message';
@@ -65,6 +61,55 @@ function showWelcomeMessage() {
     column2.insertBefore(welcomeContainer, column2.firstChild);
 }
 
+async function loadUserProjects() {
+    try {
+        const projects = await projectService.getUserProjects();
+        const projectContainer = document.querySelector('.recentemente-vizualizado .card-equipe');
+        
+        if (projects && projects.length > 0) {
+            projectContainer.innerHTML = '';
+            
+            projects.forEach(project => {
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                projectCard.innerHTML = `
+                    <h3>${project.name}</h3>
+                    <p>${project.description || 'Sem descrição'}</p>
+                    <p class="project-team">Equipe: ${project.team ? project.team.name : 'Sem equipe'}</p>
+                    <button class="view-project-btn" data-project-id="${project.id}">Abrir Quadro</button>
+                `;
+                projectContainer.appendChild(projectCard);
+            });
+            
+            document.querySelectorAll('.view-project-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const projectId = button.getAttribute('data-project-id');
+                    window.location.href = `../quadro/quadro.html?id=${projectId}`;
+                });
+            });
+        } else {
+            projectContainer.innerHTML = `
+                <div class="empty-state">
+                    <p>Você não tem projetos recentes.</p>
+                    <button id="create-project-btn">Criar Projeto</button>
+                </div>
+            `;
+            
+            document.getElementById('create-project-btn')?.addEventListener('click', () => {
+                if (window.projectModal) {
+                    window.projectModal.open();
+                } else {
+                    alert('O modal de criação de projetos não está disponível.');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar projetos:', error);
+        const projectContainer = document.querySelector('.recentemente-vizualizado .card-equipe');
+        projectContainer.innerHTML = '<p class="error-message">Erro ao carregar projetos. Tente novamente mais tarde.</p>';
+    }
+}
+
 // Carrega os dados quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
     // Exibe mensagem de boas-vindas
@@ -72,4 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Carrega as equipes do usuário
     loadUserTeams();
+    
+    // Carrega os projetos do usuário
+    loadUserProjects();
 });

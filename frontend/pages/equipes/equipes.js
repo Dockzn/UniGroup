@@ -1,333 +1,149 @@
-/**
- * Gerenciador de equipes - interface do usuário
- * 
- * Este módulo implementa a interface de usuário para gerenciar equipes,
- * permitindo adicionar, remover membros e gerenciar convites.
- */
-import { teamService } from '../../services/teamService.js';
+const IS_LOCAL = false; // Definido como false para usar o servidor remoto
+const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
+let currentTeamId = null;
+let currentUserId = null;
 
-/**
- * Controlador da página de equipes
- */
-class TeamController {
-    constructor() {
-        this.currentTeam = null;
-        this.members = [];
-        this.messageTimeout = null;
+// Ao carregar a página, pega o userId do localStorage (após login) e exibe info da equipe
+window.addEventListener('DOMContentLoaded', async () => {
+  const user = localStorage.getItem('user');
+  const infoDiv = document.getElementById('minha-equipe-info');
+  if (user) {
+    try {
+      const userObj = JSON.parse(user);
+      currentUserId = userObj.id;
+      if (userObj.team_id) {
+        currentTeamId = userObj.team_id;
+        await exibirMinhaEquipe(userObj.team_id);
+      } else {
+        if (infoDiv) {
+          infoDiv.style.display = 'block';
+          document.getElementById('minha-equipe-nome').textContent = '';
+          document.getElementById('minha-equipe-membros').innerHTML = '<span style="color:#888">Você ainda não está em nenhuma equipe.</span>';
+        }
+      }
+    } catch (e) {
+      currentUserId = null;
+      if (infoDiv) infoDiv.style.display = 'none';
     }
+  } else {
+    if (infoDiv) infoDiv.style.display = 'none';
+  }
+});
 
-    /**
-     * Inicializa os componentes e carrega os dados iniciais
-     */
-    async init() {
-        // Carregar equipe e membros
-        await this.loadTeam();
-        
-        // Configurar event listeners
-        this.setupEventListeners();
+async function exibirMinhaEquipe(teamId) {
+  try {
+    // Buscar equipe (nome)
+    const resTeam = await fetch(`${API_URL}/api/teams/${teamId}`);
+    let teamName = '';
+    if (resTeam.ok) {
+      const team = await resTeam.json();
+      teamName = team.name || '';
     }
-    
-    /**
-     * Configura todos os listeners de eventos da página
-     */
-    setupEventListeners() {
-        // Adicionar membro via input de email
-        const emailInput = document.getElementById('email-membro');
-        const addButton = document.getElementById('botao-adicionar');
-        
-        // Listener para tecla Enter no campo de email
-        if (emailInput) {
-            emailInput.addEventListener('keypress', async (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    await this.handleAddMember();
-                }
-            });
-        }
-        
-        // Listener para botão de adicionar
-        if (addButton) {
-            addButton.addEventListener('click', async () => {
-                await this.handleAddMember();
-            });
-        }
-        
-        // Listener para ações em membros (remover ou sair)
-        const membersList = document.getElementById('lista-membros');
-        if (membersList) {
-            membersList.addEventListener('click', async (e) => {
-                // Remover membro
-                if (e.target.classList.contains('btn-remover')) {
-                    const userId = e.target.dataset.userid;
-                    if (confirm('Tem certeza que deseja remover este membro?')) {
-                        await this.removeMember(userId);
-                    }
-                } 
-                // Sair da equipe
-                else if (e.target.classList.contains('btn-sair')) {
-                    if (confirm('Tem certeza que deseja sair desta equipe?')) {
-                        await this.leaveTeam();
-                    }
-                }
-            });
-        }
-        
-        // Listener para botão de convite
-        const inviteButton = document.getElementById('botao-convidar');
-        if (inviteButton) {
-            inviteButton.addEventListener('click', async () => {
-                await this.generateInviteLink();
-            });
-        }
+    // Buscar membros
+    const resMembros = await fetch(`${API_URL}/api/teams/${teamId}/members`);
+    let membros = [];
+    if (resMembros.ok) {
+      membros = await resMembros.json();
     }
-    
-    /**
-     * Carrega a equipe do usuário e seus membros
-     */
-    async loadTeam() {
-        try {
-            // Buscar a equipe do usuário
-            const teams = await teamService.getUserTeam();
-            
-            if (teams && teams.length > 0) {
-                // O usuário tem uma equipe
-                this.currentTeam = teams[0].id;
-                
-                // Carregar membros da equipe
-                this.members = await teamService.getTeamMembers(this.currentTeam);
-                this.renderMembers();
-            } else {
-                // O usuário não tem equipe, criar uma automaticamente
-                await this.createDefaultTeam();
-            }
-        } catch (error) {
-            this.showMessage('Erro ao carregar equipe: ' + error.message, 'erro');
-            console.error('Erro ao carregar equipe:', error);
-        }
+    // Exibir na tela
+    const infoDiv = document.getElementById('minha-equipe-info');
+    if (infoDiv) {
+      infoDiv.style.display = 'block';
+      document.getElementById('minha-equipe-nome').textContent = `Nome: ${teamName}`;
+      document.getElementById('minha-equipe-membros').innerHTML =
+        `<b>Total de membros:</b> ${membros.length}<br><b>Nomes:</b> ${membros.map(m => m.name).join(', ')}`;
     }
-    
-    /**
-     * Cria uma equipe padrão para o usuário
-     */
-    async createDefaultTeam() {
-        try {
-            // Obter dados do usuário para nome da equipe
-            const currentUser = JSON.parse(localStorage.getItem('user')) || {};
-            const userName = currentUser.name || 'Usuário';
-            
-            // Criar equipe
-            const response = await teamService.createTeam(
-                `Equipe de ${userName}`,
-                `Equipe padrão criada para ${userName}`
-            );
-            
-            if (response && response.team && response.team.id) {
-                this.currentTeam = response.team.id;
-                this.members = await teamService.getTeamMembers(this.currentTeam);
-                this.renderMembers();
-                this.showMessage('Equipe criada com sucesso', 'sucesso');
-            } else {
-                throw new Error('Não foi possível criar a equipe');
-            }
-        } catch (error) {
-            this.currentTeam = null;
-            this.members = [];
-            this.renderMembers();
-            this.showMessage('Erro ao criar equipe: ' + error.message, 'erro');
-            console.error('Erro ao criar equipe:', error);
-        }
-    }
-    
-    /**
-     * Processa a adição de um novo membro via email
-     */
-    async handleAddMember() {
-        const emailInput = document.getElementById('email-membro');
-        if (!emailInput) return;
-        
-        const email = emailInput.value.trim();
-        if (!email) {
-            this.showMessage('Por favor, insira um email válido', 'erro');
-            return;
-        }
-        
-        await this.addMemberByEmail(email);
-    }
-    
-    /**
-     * Adiciona um novo membro à equipe via email
-     * @param {string} email - Email do usuário a ser adicionado
-     */
-    async addMemberByEmail(email) {
-        try {
-            // Se não tem equipe, criar uma nova
-            if (!this.currentTeam) {
-                this.showMessage('Criando equipe...', 'info');
-                await this.createDefaultTeam();
-                
-                if (!this.currentTeam) {
-                    throw new Error('Não foi possível criar uma equipe');
-                }
-            }
-            
-            // Adicionar membro
-            const response = await teamService.addMemberByEmail(this.currentTeam, email);
-            
-            if (response && response.success) {
-                // Adicionar novo membro à lista
-                this.members.push(response.member);
-                this.renderMembers();
-                
-                // Limpar campo e mostrar mensagem
-                document.getElementById('email-membro').value = '';
-                this.showMessage('Membro adicionado com sucesso', 'sucesso');
-            } else {
-                throw new Error(response?.message || 'Erro ao adicionar membro');
-            }
-        } catch (error) {
-            this.showMessage('Erro ao adicionar membro: ' + error.message, 'erro');
-            console.error('Erro ao adicionar membro:', error);
-        }
-    }
-    
-    /**
-     * Remove um membro da equipe
-     * @param {string} userId - ID do usuário a ser removido
-     */
-    async removeMember(userId) {
-        try {
-            await teamService.removeMember(this.currentTeam, userId);
-            this.members = this.members.filter(member => member.id !== userId);
-            this.renderMembers();
-            this.showMessage('Membro removido com sucesso', 'sucesso');
-        } catch (error) {
-            this.showMessage('Erro ao remover membro: ' + error.message, 'erro');
-            console.error('Erro ao remover membro:', error);
-        }
-    }
-    
-    /**
-     * Sai da equipe atual
-     */
-    async leaveTeam() {
-        try {
-            await teamService.leaveTeam(this.currentTeam);
-            this.currentTeam = null;
-            this.members = [];
-            this.renderMembers();
-            this.showMessage('Você saiu da equipe com sucesso', 'sucesso');
-        } catch (error) {
-            this.showMessage('Erro ao sair da equipe: ' + error.message, 'erro');
-            console.error('Erro ao sair da equipe:', error);
-        }
-    }
-    
-    /**
-     * Gera e copia um link de convite para a equipe
-     */
-    async generateInviteLink() {
-        try {
-            if (!this.currentTeam) {
-                this.showMessage('Você não está em nenhuma equipe', 'erro');
-                return;
-            }
-            
-            const team = await teamService.getTeamDetails(this.currentTeam);
-            const inviteLink = `${window.location.origin}/equipes/join.html?code=${team.inviteCode}`;
-            
-            await navigator.clipboard.writeText(inviteLink);
-            
-            const msgElement = document.getElementById('mensagem-copiado');
-            if (msgElement) {
-                msgElement.style.display = 'inline';
-                setTimeout(() => {
-                    msgElement.style.display = 'none';
-                }, 2000);
-            }
-        } catch (error) {
-            this.showMessage('Erro ao gerar link de convite: ' + error.message, 'erro');
-            console.error('Erro ao gerar link de convite:', error);
-        }
-    }
-    
-    /**
-     * Exibe mensagem na interface
-     * @param {string} text - Texto da mensagem
-     * @param {string} type - Tipo da mensagem ('sucesso', 'erro', 'info')
-     */
-    showMessage(text, type = 'info') {
-        const msgElement = document.getElementById('mensagem-adicao');
-        if (!msgElement) return;
-        
-        // Limpar timeout anterior se existir
-        if (this.messageTimeout) {
-            clearTimeout(this.messageTimeout);
-        }
-        
-        msgElement.textContent = text;
-        msgElement.className = type;
-        msgElement.style.display = 'block';
-        
-        this.messageTimeout = setTimeout(() => {
-            msgElement.style.display = 'none';
-        }, 3000);
-    }
-    
-    /**
-     * Renderiza a lista de membros na interface
-     */
-    renderMembers() {
-        const list = document.getElementById('lista-membros');
-        const total = document.getElementById('total-membros');
-        const addButton = document.getElementById('botao-adicionar');
-        const inviteButton = document.getElementById('botao-convidar');
-        
-        if (!list || !total) return;
-        
-        // Limpar lista
-        list.innerHTML = '';
-        
-        // Verificar se existe uma equipe
-        if (!this.currentTeam) {
-            list.innerHTML = '<p class="no-team">Você não está em nenhuma equipe.</p>';
-            total.textContent = '0';
-            
-            // Desabilitar botões
-            if (addButton) addButton.disabled = true;
-            if (inviteButton) inviteButton.disabled = true;
-            return;
-        }
-        
-        // Habilitar botões
-        if (addButton) addButton.disabled = false;
-        if (inviteButton) inviteButton.disabled = false;
-        
-        // Renderizar membros
-        this.members.forEach(member => {
-            const li = document.createElement('li');
-            li.className = 'membro-item';
-            
-            const isOwner = member.role === 'owner';
-            const buttonText = isOwner ? 'Sair da equipe' : 'Remover membro';
-            
-            li.innerHTML = `
-                <span class="membro-avatar">👤</span>
-                <span class="membro-nome">${member.name}</span>
-                <button class="${isOwner ? 'btn-sair' : 'btn-remover'}" data-userid="${member.id}">
-                    ${buttonText}
-                </button>
-            `;
-            
-            list.appendChild(li);
-        });
-        
-        // Atualizar contador
-        total.textContent = this.members.length;
-    }
+  } catch (e) {
+    // Oculta info se erro
+    const infoDiv = document.getElementById('minha-equipe-info');
+    if (infoDiv) infoDiv.style.display = 'none';
+  }
 }
 
-// Inicializar controller quando o DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-    const controller = new TeamController();
-    controller.init();
-});
+
+const criarEquipeBtn = document.getElementById('criarEquipeBtn');
+if (criarEquipeBtn) {
+  criarEquipeBtn.onclick = async () => {
+    const name = document.getElementById('nomeEquipe').value.trim();
+    if (!name) return showMsg('msgCriarEquipe', 'Digite o nome da equipe', true);
+    try {
+      const res = await fetch(`${API_URL}/api/teams`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, userId: currentUserId })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) {
+        showMsg('msgCriarEquipe', data.error || 'Erro ao criar equipe', true);
+        return;
+      }
+      currentTeamId = data.id;
+      const user = localStorage.getItem('user');
+      if (user) {
+        try {
+          const userObj = JSON.parse(user);
+          userObj.team_id = data.id;
+          localStorage.setItem('user', JSON.stringify(userObj));
+        } catch (e) {}
+      }
+      showMsg('msgCriarEquipe', 'Equipe criada!', false);
+      document.getElementById('nomeEquipe').value = '';
+      await exibirMinhaEquipe(data.id);
+      loadMembers();
+    } catch (e) {
+      showMsg('msgCriarEquipe', 'Erro de conexão com o servidor', true);
+    }
+  };
+}
+
+// Adicionar membro
+const botaoAdicionar = document.getElementById('botao-adicionar');
+if (botaoAdicionar) {
+  botaoAdicionar.onclick = async () => {
+    const email = document.getElementById('email-membro').value.trim();
+    if (!email) return showMsg('mensagem-adicao', 'Digite o email do usuário', true);
+    if (!currentTeamId) return showMsg('mensagem-adicao', 'Crie uma equipe primeiro!', true);
+    const res = await fetch(`${API_URL}/api/teams/${currentTeamId}/add-member`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) {
+      showMsg('mensagem-adicao', data.error || 'Erro ao adicionar membro', true);
+      return;
+    }
+    showMsg('mensagem-adicao', 'Membro adicionado!', false);
+    document.getElementById('email-membro').value = '';
+    // Atualiza a página para refletir mudanças de equipe
+    setTimeout(() => { window.location.reload(); }, 1000);
+  };
+}
+
+// Listar membros
+async function loadMembers() {
+  if (!currentTeamId) {
+    document.getElementById('lista-membros').innerHTML = '';
+    document.getElementById('total-membros').textContent = '0';
+    return;
+  }
+  const res = await fetch(`/api/teams/${currentTeamId}/members`);
+  if (!res.ok) return;
+  const users = await res.json().catch(() => []);
+  const ul = document.getElementById('lista-membros');
+  ul.innerHTML = '';
+  users.forEach(u => {
+    const li = document.createElement('li');
+    li.textContent = u.name + ' (' + u.email + ')';
+    ul.appendChild(li);
+  });
+  document.getElementById('total-membros').textContent = users.length;
+}
+
+function showMsg(id, msg, isError) {
+  const el = document.getElementById(id);
+  el.style.display = 'inline';
+  el.style.color = isError ? 'red' : 'green';
+  el.textContent = msg;
+  setTimeout(() => { el.style.display = 'none'; }, 2500);
+}

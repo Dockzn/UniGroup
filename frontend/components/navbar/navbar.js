@@ -1,4 +1,5 @@
 import { authService } from '../../services/authService.js';
+import { ProjectModal } from '../projectModal.js';
 
 function criarNavbar() {
   const navbar = document.createElement('nav');
@@ -22,6 +23,8 @@ function criarNavbar() {
   return navbar;
 }
 
+let projectModal;
+
 document.addEventListener('DOMContentLoaded', () => {
   const header = document.querySelector('header');
   const navbar = criarNavbar();
@@ -31,6 +34,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (logoElement) {
     logoElement.addEventListener('click', () => {
       window.location.href = '../../pages/inicio/inicio.html';
+    });
+  }
+  
+  // Inicializar modal de projeto
+  projectModal = new ProjectModal();
+  projectModal.init();
+  
+  // Adicionar evento ao botão de criar novo projeto
+  const newProjectButton = navbar.querySelector('.button-newproject');
+  if (newProjectButton) {
+    newProjectButton.addEventListener('click', () => {
+      projectModal.open();
     });
   }
 });

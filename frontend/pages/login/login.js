@@ -44,6 +44,7 @@
             try {
                 // Login usando o serviço de autenticação
                 await authService.login(email, password);
+                localStorage.setItem('usuarioLogado', 'sim');
                 // Redireciona para a página inicial após login bem-sucedido
                 window.location.href = '../inicio/inicio.html';
             } catch (error) {

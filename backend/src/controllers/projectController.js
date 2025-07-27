@@ -151,6 +151,43 @@ const projectController = {
                 error: error.message
             });
         }
+    },
+
+    getUserProjects: async (req, res) => {
+        try {
+            const userId = req.user.id;
+
+            const userProjects = await db.User.findOne({
+                where: { id: userId },
+                include: [
+                    {
+                        model: db.Project,
+                        as: 'projects',
+                        include: [
+                            {
+                                model: db.Team,
+                                as: 'team',
+                                attributes: ['id', 'name']
+                            }
+                        ],
+                        through: {
+                            attributes: ['role', 'favorite']
+                        }
+                    }
+                ]
+            });
+
+            if (!userProjects || !userProjects.projects) {
+                return res.json([]);
+            }
+
+            res.json(userProjects.projects);
+        } catch (error) {
+            res.status(500).json({
+                message: 'Erro ao obter projetos do usuário',
+                error: error.message
+            });
+        }
     }
 };
 

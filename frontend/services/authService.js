@@ -1,14 +1,7 @@
-// Serviço para gerenciar autenticação do usuário
-// Para alternar entre ambiente local e remoto, mude a constante IS_LOCAL
+// Para alternar entre ambiente local e remoto, mude  IS_LOCAL
 const IS_LOCAL = false; // Definido como false para usar o servidor remoto
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 
-/**
- * Realiza o login do usuário
- * @param {string} email - Email do usuário
- * @param {string} password - Senha do usuário
- * @returns {Promise<object>} Dados do usuário e token
- */
 async function login(email, password) {
     try {
         const response = await fetch(`${API_URL}/api/auth/login`, {
@@ -22,7 +15,6 @@ async function login(email, password) {
         const data = await response.json();
         
         if (response.ok && data.token) {
-            // Salvar os dados do usuário no localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
             return data;
