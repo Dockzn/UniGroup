@@ -2,6 +2,135 @@ const db = require('../../sequelize/models');
 const { v4: uuidv4 } = require('uuid');
 
 const teamController = {
+    removeMember: async (req, res) => {
+        try {
+            const { teamId, userId } = req.params;
+            const requesterId = req.user.id;
+
+            const team = await db.Team.findOne({
+                include: [{
+                    model: db.User,
+                    as: 'members',
+                    through: { attributes: ['role'] },
+                    where: { id: requesterId }
+                }],
+                where: { id: teamId }
+            });
+
+            if (!team) {
+                return res.status(404).json({ message: 'Equipe não encontrada' });
+            }
+
+            const requesterRole = team.members[0].UserTeams.role;
+            if (requesterRole !== 'owner' && requesterRole !== 'admin' && requesterId !== userId) {
+                return res.status(403).json({ message: 'Sem permissão para remover membros' });
+            }
+
+            await db.UserTeams.destroy({
+                where: {
+                    teamId,
+                    userId
+                }
+            });
+
+            res.json({ message: 'Membro removido com sucesso' });
+        } catch (error) {
+            res.status(500).json({
+                message: 'Erro ao remover membro',
+                error: error.message
+            });
+        }
+    },
+
+    leaveTeam: async (req, res) => {
+        try {
+            const { teamId } = req.params;
+            const userId = req.user.id;
+
+            const team = await db.Team.findOne({
+                where: { id: teamId }
+            });
+
+            if (!team) {
+                return res.status(404).json({ message: 'Equipe não encontrada' });
+            }
+
+            if (team.ownerId === userId) {
+                return res.status(400).json({ message: 'O proprietário não pode sair da equipe' });
+            }
+
+            await db.UserTeams.destroy({
+                where: {
+                    teamId,
+                    userId
+                }
+            });
+
+            res.json({ message: 'Você saiu da equipe com sucesso' });
+        } catch (error) {
+            res.status(500).json({
+                message: 'Erro ao sair da equipe',
+                error: error.message
+            });
+        }
+    },
+
+    getTeam: async (req, res) => {
+        try {
+            const { teamId } = req.params;
+            const userId = req.user.id;
+
+            const team = await db.Team.findOne({
+                where: { id: teamId },
+                include: [{
+                    model: db.User,
+                    as: 'members',
+                    through: { attributes: ['role'] },
+                    where: { id: userId }
+                }]
+            });
+
+            if (!team) {
+                return res.status(404).json({ message: 'Equipe não encontrada' });
+            }
+
+            res.json(team);
+        } catch (error) {
+            res.status(500).json({
+                message: 'Erro ao obter detalhes da equipe',
+                error: error.message
+            });
+        }
+    },
+
+    getMembers: async (req, res) => {
+        try {
+            const { teamId } = req.params;
+            const userId = req.user.id;
+
+            const team = await db.Team.findOne({
+                include: [{
+                    model: db.User,
+                    as: 'members',
+                    attributes: ['id', 'name', 'email'],
+                    through: { attributes: ['role'] }
+                }],
+                where: { id: teamId }
+            });
+
+            if (!team) {
+                return res.status(404).json({ message: 'Equipe não encontrada' });
+            }
+
+            res.json(team.members);
+        } catch (error) {
+            res.status(500).json({
+                message: 'Erro ao listar membros',
+                error: error.message
+            });
+        }
+    },
+
     create: async (req, res) => {
         try {
             const { name, description } = req.body;
