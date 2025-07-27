@@ -1,9 +1,4 @@
-/**
- * Middleware para chamadas de API para garantir que o token esteja presente
- * e redirecionar para login se não estiver autenticado.
- */
 
-// Função de ajuda para verificar se a autenticação está válida
 function checkTokenAndRedirect() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -14,7 +9,6 @@ function checkTokenAndRedirect() {
     return token;
 }
 
-// Middleware para garantir autenticação em todas as chamadas de API
 export function secureApi(apiFunction) {
     return async function(...args) {
         const token = checkTokenAndRedirect();
@@ -22,7 +16,6 @@ export function secureApi(apiFunction) {
             const result = await apiFunction(...args);
             return result;
         } catch (error) {
-            // Verificar se o erro é de autenticação (401)
             if (error.status === 401) {
                 console.error('API: Token inválido, redirecionando para login');
                 localStorage.removeItem('token');

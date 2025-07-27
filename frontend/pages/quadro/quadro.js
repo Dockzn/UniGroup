@@ -1,5 +1,1 @@
-import { checkAuth } from '../../services/authGuard.js';
-
-if (!checkAuth()) {
-    throw new Error('Unauthorized');
-}
+// Removida a verificação de autenticação

@@ -1,17 +1,4 @@
 import { authService } from '../../services/authService.js';
-import { checkAuth } from '../../services/authGuard.js';
-
-// Verificar autenticação antes de renderizar a navbar
-if (!checkAuth() && !isPublicPage(window.location.pathname)) {
-  console.error('Acesso não autorizado detectado na navbar');
-  window.location.href = '/pages/login/login.html';
-}
-
-// Helper para identificar páginas públicas
-function isPublicPage(path) {
-  const publicPages = ['/login/login.html', '/cadastro/cadastro.html', '/index.html', '/'];
-  return publicPages.some(publicPath => path.includes(publicPath));
-}
 
 function criarNavbar() {
   const navbar = document.createElement('nav');

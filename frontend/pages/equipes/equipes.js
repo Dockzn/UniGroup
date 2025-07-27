@@ -1,16 +1,8 @@
 import { teamService } from '../../services/teamService.js';
-import { checkAuth } from '../../services/authGuard.js';
 
 let currentTeam = null;
 let members = [];
 
-if (!checkAuth()) {
-    throw new Error('Unauthorized');
-}
-
-/**
- * Carrega os membros da equipe do usuário logado
- */
 async function loadTeamMembers() {
     try {
         // Verificar se há um ID de equipe na URL

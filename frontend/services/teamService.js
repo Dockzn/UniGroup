@@ -1,7 +1,7 @@
 // Funções de API
 import { authService } from './authService.js';
 
-// Para alternar entre ambiente local e remoto, mude a constante IS_LOCAL
+// Para alternar entre ambiente local e remoto, mude  IS_LOCAL
 const IS_LOCAL = false; // Definido como false para usar o servidor remoto
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 

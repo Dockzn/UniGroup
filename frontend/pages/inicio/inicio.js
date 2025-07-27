@@ -1,10 +1,7 @@
-import { checkAuth } from '../../services/authGuard.js';
 import { teamService } from '../../services/teamService.js';
 import { authService } from '../../services/authService.js';
 
-if (!checkAuth()) {
-    throw new Error('Unauthorized');
-}
+// Não há mais verificação de autenticação
 
 // Obtém dados do usuário logado
 const currentUser = authService.getCurrentUser();

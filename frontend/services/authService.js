@@ -35,13 +35,6 @@ async function login(email, password) {
     }
 }
 
-/**
- * Realiza o registro de um novo usuário
- * @param {string} name - Nome do usuário
- * @param {string} email - Email do usuário
- * @param {string} password - Senha do usuário
- * @returns {Promise<object>} Resposta da API
- */
 async function register(name, email, password) {
     try {
         const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -59,45 +52,27 @@ async function register(name, email, password) {
     }
 }
 
-/**
- * Realiza o logout do usuário
- */
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/pages/login/login.html';
 }
 
-/**
- * Verifica se o usuário está autenticado
- * @returns {boolean} true se o usuário está autenticado
- */
+
 function isAuthenticated() {
     return localStorage.getItem('token') !== null;
 }
 
-/**
- * Retorna os dados do usuário logado
- * @returns {object|null} Dados do usuário ou null se não estiver logado
- */
 function getCurrentUser() {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
 }
 
-/**
- * Retorna o ID do usuário logado
- * @returns {string|null} ID do usuário ou null se não estiver logado
- */
 function getCurrentUserId() {
     const user = getCurrentUser();
     return user ? user.id : null;
 }
 
-/**
- * Atualiza os dados do usuário no localStorage
- * @param {object} userData - Novos dados do usuário
- */
 function updateCurrentUser(userData) {
     const currentUser = getCurrentUser();
     if (currentUser) {
@@ -108,7 +83,6 @@ function updateCurrentUser(userData) {
     }
 }
 
-// Exporta as funções do serviço
 export const authService = {
     login,
     register,
