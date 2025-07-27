@@ -23,6 +23,10 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 const User = require('./user')(sequelize, Sequelize.DataTypes);
 db.User = User;
 
+// Carrega o modelo UserTeams
+const UserTeams = require('./userTeams')(sequelize, Sequelize.DataTypes);
+db.UserTeams = UserTeams;
+
 // Adiciona sequelize ao db para uso futuro
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

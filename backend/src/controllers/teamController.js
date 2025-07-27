@@ -40,14 +40,23 @@ const teamController = {
                 return res.status(403).json({ message: 'Sem permissão para adicionar membros' });
             }
 
-            // Verificar se o usuário já é membro da equipe
+            // Verificar se o usuário já está em alguma equipe
+            const alreadyInTeam = await db.UserTeams.findOne({
+                where: {
+                    userId: userToAdd.id
+                }
+            });
+            if (alreadyInTeam) {
+                return res.status(400).json({ message: 'Usuário já está vinculado a uma equipe' });
+            }
+
+            // Verificar se o usuário já é membro da equipe (por segurança)
             const existingMember = await db.UserTeams.findOne({
                 where: {
                     teamId,
                     userId: userToAdd.id
                 }
             });
-
             if (existingMember) {
                 return res.status(400).json({ message: 'Usuário já é membro da equipe' });
             }
