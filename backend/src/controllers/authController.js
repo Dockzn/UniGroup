@@ -26,7 +26,8 @@ const authController = {
             })
 
         }catch (error){
-            console.error(`Erro no registro ${error}`)
+            console.error(`Erro no registro: ${error}`)
+            res.status(500).json({ message: 'Erro ao criar usuário', error: error.message })
         }
     },
     login: async (req, res) => {
@@ -59,7 +60,8 @@ const authController = {
             })
 
         }catch (error){
-            console.error(`Erro no login ${error}`)
+            console.error(`Erro no login: ${error}`)
+            res.status(500).json({ message: 'Erro ao autenticar usuário', error: error.message })
         }
     }
 }

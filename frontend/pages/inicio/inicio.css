@@ -112,8 +112,86 @@ body {
 }
 
 .equipes {
-  height: 250px;
+  min-height: 250px;
   padding: 10px;
+}
+
+.card-equipe {
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.team-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.team-card h3 {
+  margin-top: 0;
+  color: #003566;
+}
+
+.team-card p {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.view-team-btn {
+  background-color: #003566;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.view-team-btn:hover {
+  background-color: #002855;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+#create-team-btn {
+  background-color: #003566;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+#create-team-btn:hover {
+  background-color: #002855;
+}
+
+.error-message {
+  color: #d32f2f;
+  text-align: center;
+  padding: 15px;
 }
 
 ul{

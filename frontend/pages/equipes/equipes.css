@@ -183,7 +183,7 @@ li {
   margin-top: 20px;
 }
 
-.membro {
+.membro-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -192,6 +192,23 @@ li {
   padding: 10px;
   border-radius: 8px;
   margin-bottom: 10px;
+}
+
+.membro-avatar {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 1.2rem;
+}
+
+.membro-nome {
+  flex: 1;
+}
+
+.no-team {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
 }
 
 .convite-container {

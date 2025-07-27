@@ -16,10 +16,13 @@
             }
         });
 
+        // Importar o serviço de autenticação
+        import { authService } from '../../services/authService.js';
+        
         // Form submission handler
         const loginForm = document.getElementById('loginForm');
         
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
@@ -38,30 +41,15 @@
                 return;
             }
             
-            // Login process
-            fetch('https://unigroup.onrender.com/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.token) {
-                    // Salva o token e dados do usuário
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    // Redireciona para a página inicial
-                    window.location.href = '../inicio/inicio.html';
-                } else {
-                    alert(data.message || 'Erro ao fazer login');
-                }
-            })
-            .catch(error => {
+            try {
+                // Login usando o serviço de autenticação
+                await authService.login(email, password);
+                // Redireciona para a página inicial após login bem-sucedido
+                window.location.href = '../inicio/inicio.html';
+            } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao conectar com o servidor');
-            });
+                alert(error.message || 'Erro ao fazer login');
+            }
         });
 
         // Input focus effects

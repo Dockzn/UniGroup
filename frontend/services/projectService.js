@@ -1,5 +1,9 @@
 // Funções de API
-const API_URL = 'https://unigroup.onrender.com';
+import { authService } from './authService.js';
+
+// Para alternar entre ambiente local e remoto, mude a constante IS_LOCAL
+const IS_LOCAL = true; // Mude para false para voltar ao servidor remoto
+const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 
 async function createProject(teamId, name, description, dueDate) {
     try {
