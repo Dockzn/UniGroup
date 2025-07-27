@@ -1,147 +1,79 @@
-// Funções de API
-import { authService } from './authService.js';
-
-// Para alternar entre ambiente local e remoto, mude  IS_LOCAL
-const IS_LOCAL = false; // Definido como false para usar o servidor remoto
+const IS_LOCAL = false;
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 
-async function removeMember(teamId, userId) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams/${teamId}/members/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao remover membro:', error);
-        throw error;
+class TeamService {
+    #getToken() {
+        return localStorage.getItem('token');
     }
-}
-
-async function leaveTeam(teamId) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams/${teamId}/leave`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao sair da equipe:', error);
-        throw error;
-    }
-}
-
-async function getTeamMembers(teamId) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams/${teamId}/members`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao listar membros:', error);
-        throw error;
-    }
-}
-
-async function getTeamDetails(teamId) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams/${teamId}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao obter detalhes da equipe:', error);
-        throw error;
-    }
-}
-
-async function createTeam(name, description) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams`, {
-            method: 'POST',
-            headers: {
+    
+    async #fetchAPI(endpoint, options = {}) {
+        try {
+            const token = this.#getToken();
+            const defaultHeaders = {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+                'Authorization': token ? `Bearer ${token}` : ''
+            };
+            
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers: {
+                    ...defaultHeaders,
+                    ...options.headers
+                }
+            });
+            
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Erro na requisição para ${endpoint}:`, error);
+            throw error;
+        }
+    }
+    
+    async getUserTeam() {
+        return this.#fetchAPI('/api/teams');
+    }
+    
+    async createTeam(name, description) {
+        return this.#fetchAPI('/api/teams', {
+            method: 'POST',
             body: JSON.stringify({ name, description })
         });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao criar equipe:', error);
-        throw error;
     }
-}
-
-async function listTeams() {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao listar equipes:', error);
-        throw error;
+    
+    async getTeamMembers(teamId) {
+        return this.#fetchAPI(`/api/teams/${teamId}/members`);
     }
-}
-
-async function addMemberByEmail(teamId, email) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams/${teamId}/members/add`, {
+    
+    async addMemberByEmail(teamId, email) {
+        return this.#fetchAPI(`/api/teams/${teamId}/members/add`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
             body: JSON.stringify({ email })
         });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao adicionar membro:', error);
-        throw error;
     }
-}
-
-async function joinTeam(inviteCode) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/teams/join/${inviteCode}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+    
+    async removeMember(teamId, userId) {
+        return this.#fetchAPI(`/api/teams/${teamId}/members/${userId}`, {
+            method: 'DELETE'
         });
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao entrar na equipe:', error);
-        throw error;
+    }
+    
+    async leaveTeam(teamId) {
+        return this.#fetchAPI(`/api/teams/${teamId}/leave`, {
+            method: 'POST'
+        });
+    }
+    
+    async getTeamDetails(teamId) {
+        return this.#fetchAPI(`/api/teams/${teamId}`);
+    }
+    
+    async joinTeam(inviteCode) {
+        return this.#fetchAPI(`/api/teams/join/${inviteCode}`, {
+            method: 'GET'
+        });
     }
 }
 
-// Exporta as funções
-export const teamService = {
-    createTeam,
-    listTeams,
-    joinTeam,
-    removeMember,
-    leaveTeam,
-    getTeamMembers,
-    getTeamDetails,
-    addMemberByEmail
-};
+// Exporta uma instância única do serviço
+export const teamService = new TeamService();
