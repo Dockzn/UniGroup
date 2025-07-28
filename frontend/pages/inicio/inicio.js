@@ -1,141 +1,151 @@
-import { teamService } from '../../services/teamService.js';
 import { authService } from '../../services/authService.js';
 import { projectService } from '../../services/projectService.js';
 
 const currentUser = authService.getCurrentUser();
 
-async function loadUserTeams() {
-    try {
-        const user = localStorage.getItem('user');
-        let userTeamId = null;
-        let userTeamName = '';
-        if (user) {
-            try {
-                const userObj = JSON.parse(user);
-                userTeamId = userObj.team_id;
-                userTeamName = userObj.team_name || '';
-            } catch (e) {}
-        }
-        const teamContainer = document.querySelector('.equipes .card-equipe');
-        if (userTeamId) {
-            const res = await fetch(`../../../../backend/src/routes/teamRoutes.js/${userTeamId}`);
-            let team = null;
-            try {
-                team = await res.json();
-            } catch (e) {}
-            teamContainer.innerHTML = '';
-            if (team && team.name) {
-                const teamCard = document.createElement('div');
-                teamCard.className = 'team-card';
-                teamCard.style.backgroundImage = "url('../../assets/images/imagem-projeto.png')";
-                teamCard.style.backgroundSize = 'cover';
-                teamCard.style.backgroundPosition = 'center';
-                teamCard.style.borderRadius = '12px';
-                teamCard.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-                teamCard.style.margin = '16px 0';
-                teamCard.style.padding = '16px';
-                teamCard.style.color = '#222';
-                teamCard.innerHTML = `
-                    <div style="background:rgba(255,255,255,0.85);padding:18px 12px 12px 12px;border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;">
-                        <h3 style="margin:0 0 8px 0;font-size:1.3em;">${team.name}</h3>
-                        <p style="margin:0 0 0 0;">${team.description || 'Sem descrição'}</p>
-                    </div>
-                `;
-                teamContainer.appendChild(teamCard);
-            }
-        } else {
-            teamContainer.innerHTML = `
-                <div class="empty-state">
-                    <p>Você não pertence a nenhuma equipe ainda.</p>
-                    <button id="create-team-btn">Criar Equipe</button>
-                </div>
-            `;
-            document.getElementById('create-team-btn')?.addEventListener('click', () => {
-                window.location.href = '../equipes/equipes.html';
-            });
-        }
-    } catch (error) {
-        console.error('Erro ao carregar equipes:', error);
-        const teamContainer = document.querySelector('.equipes .card-equipe');
-        teamContainer.innerHTML = '<p class="error-message">Erro ao carregar equipes. Tente novamente mais tarde.</p>';
-    }
+// --- Funções para gerenciar favoritos ---
+function getFavoriteProjects() {
+    const favorites = localStorage.getItem(`favorites_${currentUser.id}`);
+    return favorites ? JSON.parse(favorites) : [];
 }
 
+function toggleFavorite(projectId) {
+    let favorites = getFavoriteProjects();
+    const projectIdNum = Number(projectId);
+    const index = favorites.indexOf(projectIdNum);
+
+    if (index > -1) {
+        favorites.splice(index, 1); // Remove dos favoritos
+    } else {
+        favorites.push(projectIdNum); // Adiciona aos favoritos
+    }
+
+    localStorage.setItem(`favorites_${currentUser.id}`, JSON.stringify(favorites));
+    loadUserProjects(); // Recarrega os projetos para atualizar a UI
+}
+
+// --- Funções de Carregamento da UI ---
 function showWelcomeMessage() {
     const welcomeContainer = document.createElement('div');
     welcomeContainer.className = 'welcome-message';
     welcomeContainer.innerHTML = `
-        <h2>Bem-vindo, ${currentUser ? currentUser.name : 'Usuário'}!</h2>
-        <p>Este é seu painel de gerenciamento de projetos e equipes.</p>
-    `;
-    
-    // Inserir a mensagem no início da segunda coluna
+<h2>Bem-vindo, ${currentUser ? currentUser.name : 'Usuário'}!</h2>
+<p>Este é seu painel de gerenciamento de projetos e equipes.</p>
+`;
     const column2 = document.querySelector('.colum2');
     column2.insertBefore(welcomeContainer, column2.firstChild);
 }
 
-async function loadUserProjects() {
-    try {
-        const user = localStorage.getItem('user');
-        let userId = null;
-        if (user) {
-            try {
-                const userObj = JSON.parse(user);
-                userId = userObj.id;
-            } catch (e) {}
-        }
-        const projects = await projectService.getUserProjects(userId);
-        const projectContainer = document.querySelector('.recentemente-vizualizado .card-equipe');
-        if (projects && projects.length > 0) {
-            projectContainer.innerHTML = '';
-            projects.forEach(project => {
-                const projectCard = document.createElement('div');
-                projectCard.className = 'project-card';
-                projectCard.style.backgroundImage = "url('../../assets/images/fundo de equipe_e_trabalho.jpg')";
-                projectCard.style.backgroundSize = 'cover';
-                projectCard.style.backgroundPosition = 'center';
-                projectCard.style.borderRadius = '12px';
-                projectCard.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-                projectCard.style.margin = '16px 0';
-                projectCard.style.padding = '16px';
-                projectCard.style.color = '#222';
-                projectCard.innerHTML = `
-                    <div style="background:rgba(255,255,255,0.85);padding:12px;border-radius:8px;">
-                        <h3 style="margin:0 0 8px 0;">${project.name}</h3>
-                        <p class="project-team" style="margin:0 0 12px 0;">Equipe: ${project.team ? project.team.name : 'Sem equipe'}</p>
-                        <button class="view-project-btn" data-project-id="${project.id}" style="padding:6px 16px;border-radius:6px;border:none;background:#28a745;color:#fff;cursor:pointer;">Abrir Quadro</button>
-                    </div>
-                `;
-                projectContainer.appendChild(projectCard);
-            });
-            document.querySelectorAll('.view-project-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    const projectId = button.getAttribute('data-project-id');
-                    window.location.href = `../quadro/quadro.html?projectId=${projectId}`;
-                });
-            });
+function renderProjects(container, projects, areFavorites) {
+    if (projects.length === 0) {
+        if (areFavorites) {
+            container.innerHTML = '<p>Nenhum projeto favoritado ainda.</p>';
         } else {
-            projectContainer.innerHTML = `
-                <div class="empty-state">
-                    <p>Você não tem projetos recentes.</p>
-                </div>
-            `;
+            container.innerHTML = `
+<div class="empty-state">
+<p>Você ainda não tem projetos.</p>
+</div>
+`;
         }
+        return;
+    }
+
+    container.innerHTML = ''; // Limpa o container
+    projects.forEach(project => {
+        const isFav = getFavoriteProjects().includes(project.id);
+        const projectCard = document.createElement('div');
+        projectCard.className = 'project-card';
+        projectCard.setAttribute('data-project-name', project.name.toLowerCase());
+
+        projectCard.innerHTML = `
+<img src="../../assets/images/equipe-trabalho.jpg" alt="Imagem do Projeto" />
+<div>
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <h3>${project.name}</h3>
+    <button class="favorite-btn" data-project-id="${project.id}"
+      style="background: none; border: none; font-size: 18px; cursor: pointer; color: ${isFav ? '#ffd700' : '#ccc'};">
+      <i class="fas fa-star"></i>
+    </button>
+  </div>
+  <button class="view-project-btn" data-project-id="${project.id}">Abrir Quadro</button>
+</div>
+`;
+
+        container.appendChild(projectCard);
+    });
+}
+
+
+async function loadUserProjects() {
+    const projectContainer = document.querySelector('.recentemente-vizualizado .card-equipe');
+    const favoritosSection = document.getElementById('favoritosSection');
+    const favoritosContainer = document.getElementById('favoritosContainer');
+
+    try {
+        const projects = await projectService.getUserProjects(currentUser.id);
+        const favoriteProjectIds = getFavoriteProjects();
+
+        const favoriteProjects = projects.filter(p => favoriteProjectIds.includes(p.id));
+        const otherProjects = projects.filter(p => !favoriteProjectIds.includes(p.id));
+
+        if (favoriteProjects.length > 0) {
+            favoritosSection.style.display = 'block';
+            renderProjects(favoritosContainer, favoriteProjects, true);
+        } else {
+            favoritosSection.style.display = 'none';
+        }
+
+        renderProjects(projectContainer, otherProjects, false);
+
+        // Adicionar Listeners após renderizar
+        addProjectCardListeners();
+
     } catch (error) {
         console.error('Erro ao carregar projetos:', error);
-        const projectContainer = document.querySelector('.recentemente-vizualizado .card-equipe');
         projectContainer.innerHTML = '<p class="error-message">Erro ao carregar projetos. Tente novamente mais tarde.</p>';
     }
 }
 
-// Carrega os dados quando o DOM estiver pronto
+function addProjectCardListeners() {
+    document.querySelectorAll('.view-project-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const projectId = button.getAttribute('data-project-id');
+            window.location.href = `../quadro/quadro.html?projectId=${projectId}`;
+        });
+    });
+
+    document.querySelectorAll('.favorite-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const projectId = button.getAttribute('data-project-id');
+            toggleFavorite(projectId);
+        });
+    });
+}
+
+function setupSearch() {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        document.querySelectorAll('.project-card').forEach(card => {
+            const projectName = card.getAttribute('data-project-name');
+            if (projectName.includes(searchTerm)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+}
+
+
+// --- Inicialização ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Exibe mensagem de boas-vindas
+    if (!currentUser) {
+        window.location.href = '../login/login.html';
+        return;
+    }
     showWelcomeMessage();
-    
-    // Carrega as equipes do usuário
-    loadUserTeams();
-    
-    // Carrega os projetos do usuário
     loadUserProjects();
+    setupSearch();
 });

@@ -95,3 +95,23 @@ exports.deleteActivity = async (req, res) => {
     res.status(500).json({ error: 'Erro ao excluir atividade.' });
   }
 };
+
+exports.updateList = async (req, res) => {
+  try {
+    const { listId } = req.params;
+    const { name } = req.body;
+
+    const list = await List.findByPk(listId);
+    if (!list) {
+      return res.status(404).json({ error: 'Lista não encontrada.' });
+    }
+
+    list.name = name;
+    await list.save();
+
+    res.json(list);
+  } catch (err) {
+    console.error('Erro ao atualizar lista:', err);
+    res.status(500).json({ error: 'Erro ao atualizar a lista.' });
+  }
+};

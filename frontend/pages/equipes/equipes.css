@@ -306,7 +306,7 @@ body {
 
 .input-group button {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #003566, #0066cc);
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -316,7 +316,7 @@ body {
 }
 
 .input-group button:hover {
-  background: linear-gradient(135deg, #002a4d, #0052a3);
+  background: var(--secundary-color);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
 }
@@ -341,56 +341,7 @@ body {
   border: 1px solid #fecaca;
 }
 
-.convite-container {
-  padding: 24px;
-  background: linear-gradient(135deg, #fefce8, #fef9c3);
-  border-radius: 12px;
-  margin: 24px 0;
-  border: 1px solid #fde047;
-}
 
-.convite-container h4 {
-  color: #1e293b;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-}
-
-.convite-container p {
-  color: #475569;
-  margin: 0 0 16px 0;
-  line-height: 1.5;
-}
-
-#botao-convidar {
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #f59e0b, #f97316);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#botao-convidar:hover {
-  background: linear-gradient(135deg, #d97706, #ea580c);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-#mensagem-copiado {
-  margin-left: 12px;
-  color: #16a34a;
-  font-weight: 600;
-  background: #f0fdf4;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #bbf7d0;
-}
 
 .criar-equipe-container {
   max-width: 500px;
@@ -449,7 +400,7 @@ body {
 
 .criar-equipe-container button {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #003566, #0066cc);
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
@@ -459,7 +410,7 @@ body {
 }
 
 .criar-equipe-container button:hover {
-  background: linear-gradient(135deg, #002a4d, #0052a3);
+  background: var(--secundary-color);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
 }

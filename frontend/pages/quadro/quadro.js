@@ -1,8 +1,18 @@
-
 const IS_LOCAL = false;
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
-// Mock data
+
 let projectData = {};
+let draggedActivity = null;
+let draggedList = null;
+let nextActivityId = 12;
+let nextListId = 5;
+
+const board = document.getElementById('board');
+const activityModal = document.getElementById('activityModal');
+const viewActivityModal = document.getElementById('viewActivityModal');
+const listModal = document.getElementById('listModal');
+const activityForm = document.getElementById('activityForm');
+const listForm = document.getElementById('listForm');
 
 function getProjectIdFromURL() {
     const params = new URLSearchParams(window.location.search);
@@ -15,7 +25,37 @@ async function loadProjectData(projectId) {
         members: [],
         lists: []
     };
+
     try {
+        // Carregar nome do projeto
+        const projectRes = await fetch(`${API_URL}/api/projects/${projectId}`);
+        if (projectRes.ok) {
+            const project = await projectRes.json();
+            projectData.name = project.name;
+        }
+
+        // Carregar membros da equipe do projeto
+        try {
+            const teamRes = await fetch(`${API_URL}/api/projects/${projectId}/team`);
+            if (teamRes.ok) {
+                const team = await teamRes.json();
+                if (team.id) {
+                    const membersRes = await fetch(`${API_URL}/api/teams/${team.id}/members`);
+                    if (membersRes.ok) {
+                        const members = await membersRes.json();
+                        projectData.members = members.map(member => ({
+                            id: member.id,
+                            name: member.name,
+                            email: member.email
+                        }));
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('Erro ao carregar membros:', e);
+        }
+
+        // Carregar listas e atividades
         const { boardService } = await import('../../services/boardService.js');
         const lists = await boardService.getListsByProject(projectId);
         const listsWithActivities = await Promise.all(lists.map(async (list) => {
@@ -36,38 +76,11 @@ async function loadProjectData(projectId) {
         }));
         projectData.lists = listsWithActivities;
     } catch (error) {
-        console.error('Erro ao carregar listas/atividades:', error);
+        console.error('Erro ao carregar dados do projeto:', error);
         projectData.lists = [];
     }
 }
 
-// Variables
-let draggedActivity = null;
-let draggedList = null;
-let nextActivityId = 12;
-let nextListId = 5;
-
-// DOM Elements
-const board = document.getElementById('board');
-const activityModal = document.getElementById('activityModal');
-const viewActivityModal = document.getElementById('viewActivityModal');
-const listModal = document.getElementById('listModal');
-const activityForm = document.getElementById('activityForm');
-const listForm = document.getElementById('listForm');
-
-// Área de debug simples
-let debugArea = document.getElementById('debugArea');
-if (!debugArea) {
-    debugArea = document.createElement('div');
-    debugArea.id = 'debugArea';
-    debugArea.style = 'background:#f8f9fa;border:1px solid #ccc;padding:8px;margin:8px 0;font-size:13px;color:#333;';
-    document.body.insertBefore(debugArea, document.body.firstChild);
-}
-function printDebug(msg) {
-    debugArea.innerHTML += `<div>${msg}</div>`;
-}
-
-// Initialize
 document.addEventListener('DOMContentLoaded', async function () {
     const projectId = getProjectIdFromURL();
     if (projectId) {
@@ -77,16 +90,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     setupEventListeners();
 });
 
-// Event Listeners
 function setupEventListeners() {
-    // Modal controls
     document.getElementById('closeModal').addEventListener('click', closeActivityModal);
     document.getElementById('closeViewModal').addEventListener('click', closeViewActivityModal);
     document.getElementById('closeListModal').addEventListener('click', closeListModal);
     document.getElementById('cancelBtn').addEventListener('click', closeActivityModal);
     document.getElementById('cancelListBtn').addEventListener('click', closeListModal);
 
-    // Verificar se o botão de membros existe antes de adicionar o listener
     const btnMembers = document.getElementById('btnMembers');
     if (btnMembers) {
         btnMembers.addEventListener('click', toggleMembersPopup);
@@ -97,24 +107,55 @@ function setupEventListeners() {
         closeMembersBtn.addEventListener('click', closeMembersPopup);
     }
 
-    // Header actions
+    // Botão adicionar membro (novo)
+    const btnAddMember = document.getElementById('btnAddMember');
+    if (btnAddMember) {
+        btnAddMember.addEventListener('click', openAddMemberModal);
+    }
+
     const btnCreateList = document.querySelector('.btn-create-list');
     if (btnCreateList) {
-        btnCreateList.addEventListener('click', function() {
+        btnCreateList.addEventListener('click', function () {
             document.getElementById('listTitle').value = '';
             openListModal();
         });
     }
 
-    // Form submissions
+    // Dentro da função setupEventListeners em quadro.js
+    const favButton = document.querySelector('.btn-favorite');
+    if (favButton) {
+        const projectId = getProjectIdFromURL();
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+
+        // Define o estado inicial do botão
+        const favorites = JSON.parse(localStorage.getItem(`favorites_${currentUser.id}`) || '[]');
+        if (favorites.includes(Number(projectId))) {
+            favButton.classList.add('active');
+        }
+
+        // Adiciona o evento de clique
+        favButton.addEventListener('click', () => {
+            let favorites = JSON.parse(localStorage.getItem(`favorites_${currentUser.id}`) || '[]');
+            const projectIdNum = Number(projectId);
+            const index = favorites.indexOf(projectIdNum);
+
+            if (index > -1) {
+                favorites.splice(index, 1);
+                favButton.classList.remove('active');
+            } else {
+                favorites.push(projectIdNum);
+                favButton.classList.add('active');
+            }
+            localStorage.setItem(`favorites_${currentUser.id}`, JSON.stringify(favorites));
+        });
+    }
+
     activityForm.addEventListener('submit', handleActivitySubmit);
     listForm.addEventListener('submit', handleListSubmit);
 
-    // View modal actions
     document.getElementById('editFromViewBtn').addEventListener('click', editFromView);
     document.getElementById('deleteFromViewBtn').addEventListener('click', deleteFromView);
 
-    // Fechar popup ao clicar fora
     document.addEventListener('click', function (e) {
         const popup = document.getElementById('membersPopup');
         const btn = document.getElementById('btnMembers');
@@ -123,7 +164,6 @@ function setupEventListeners() {
         }
     });
 
-    // Close modal when clicking outside
     window.addEventListener('click', function (e) {
         if (e.target === activityModal) closeActivityModal();
         if (e.target === viewActivityModal) closeViewActivityModal();
@@ -131,7 +171,6 @@ function setupEventListeners() {
     });
 }
 
-// Render Functions
 function renderBoard() {
     const projectTitle = document.querySelector('.project-title');
     if (projectTitle) {
@@ -184,6 +223,16 @@ function createActivityHTML(activity) {
     const priorityClass = activity.priority ? `priority-${activity.priority}` : '';
     const completedClass = activity.completed ? 'completed' : '';
 
+    // Buscar nomes dos membros atribuídos
+    const assignedMembersHTML = activity.assignedUsers && activity.assignedUsers.length > 0 ? `
+        <div class="activity-members">
+            ${activity.assignedUsers.map(userId => {
+        const member = projectData.members.find(m => m.id === userId);
+        return member ? `<div class="activity-member-chip"><i class="fas fa-user"></i>${member.name}</div>` : '';
+    }).join('')}
+        </div>
+    ` : '';
+
     return `
         <div class="activity-card ${priorityClass} ${completedClass}"
              draggable="true"
@@ -216,6 +265,7 @@ function createActivityHTML(activity) {
                     ` : ''}
                 </div>
             ` : ''}
+            ${assignedMembersHTML}
         </div>
     `;
 }
@@ -229,7 +279,6 @@ function getPriorityLabel(priority) {
     return labels[priority] || 'Normal';
 }
 
-// List Management
 function startEditListTitle(listId) {
     const listElement = document.querySelector(`[data-list-id="${listId}"] .list-title`);
     const headerElement = document.querySelector(`[data-list-id="${listId}"] .list-header`);
@@ -246,26 +295,31 @@ async function finishEditListTitle(listId, newTitle) {
 
     if (newTitle.trim() !== '') {
         try {
-            // TODO: Substituir pela chamada real da API
-            // await fetch(`/api/lists/${listId}`, {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify({ title: newTitle.trim() })
-            // });
+            // A chamada para a API agora funcionará por causa das mudanças no backend
+            const response = await fetch(`${API_URL}/api/lists/${listId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: newTitle.trim() })
+            });
 
-            // Atualizar localmente (manter até ter API)
+            if (!response.ok) {
+                // Lança um erro se a resposta do servidor não for OK
+                throw new Error('Falha na resposta do servidor');
+            }
+
+            // Atualiza o estado localmente após o sucesso
             const list = projectData.lists.find(l => l.id === listId);
             if (list) {
                 list.title = newTitle.trim();
                 listElement.value = newTitle.trim();
             }
+
         } catch (error) {
             console.error('Erro ao renomear lista:', error);
             alert('Erro ao renomear lista. Tente novamente.');
-            // Reverter o título em caso de erro
+            // Reverte para o nome original em caso de erro
             const list = projectData.lists.find(l => l.id === listId);
             if (list) {
                 listElement.value = list.title;
@@ -291,7 +345,6 @@ function handleListTitleKeypress(event, listId, value) {
     }
 }
 
-// List Drag and Drop
 function setupListDragEvents(listElement) {
     listElement.addEventListener('dragstart', handleListDragStart);
     listElement.addEventListener('dragend', handleListDragEnd);
@@ -323,11 +376,9 @@ function handleListDragOver(e) {
 
 function handleListDrop(e) {
     e.preventDefault();
-
     if (draggedList && e.currentTarget.classList.contains('list-column') && draggedList !== e.currentTarget) {
         const draggedId = parseInt(draggedList.getAttribute('data-list-id'));
         const targetId = parseInt(e.currentTarget.getAttribute('data-list-id'));
-
         reorderLists(draggedId, targetId);
         renderBoard();
     }
@@ -339,38 +390,20 @@ async function reorderLists(draggedId, targetId) {
         const targetIndex = projectData.lists.findIndex(l => l.id === targetId);
 
         if (draggedIndex !== -1 && targetIndex !== -1) {
-            // TODO: Substituir pela chamada real da API
-            // await fetch('/api/lists/reorder', {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify({
-            //         projectId: getProjectIdFromURL(),
-            //         fromIndex: draggedIndex,
-            //         toIndex: targetIndex
-            //     })
-            // });
-
-            // Reordenar localmente (manter até ter API)
             const [draggedList] = projectData.lists.splice(draggedIndex, 1);
             projectData.lists.splice(targetIndex, 0, draggedList);
         }
     } catch (error) {
         console.error('Erro ao reordenar listas:', error);
         alert('Erro ao reordenar listas. Tente novamente.');
-        renderBoard(); // Reverter em caso de erro
+        renderBoard();
     }
 }
 
-// Activity Drag and Drop
 function setupListDropZone(container) {
     container.addEventListener('dragover', handleDragOver);
     container.addEventListener('drop', handleDrop);
     container.addEventListener('dragleave', handleDragLeave);
-
-    // Setup activity drag events
     container.addEventListener('dragstart', handleDragStart);
     container.addEventListener('dragend', handleDragEnd);
 }
@@ -393,7 +426,6 @@ function handleDragEnd(e) {
 function handleDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-
     if (e.currentTarget.classList.contains('list-content')) {
         e.currentTarget.classList.add('drag-over');
     }
@@ -408,24 +440,19 @@ function handleDragLeave(e) {
 function handleDrop(e) {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
-
     if (draggedActivity) {
         const newListId = parseInt(e.currentTarget.getAttribute('data-list-id'));
         const activityId = parseInt(draggedActivity.getAttribute('data-activity-id'));
-
         moveActivity(activityId, newListId);
         renderBoard();
     }
 }
 
-// Activity Management
 async function moveActivity(activityId, newListId) {
     try {
-        // Integração com backend
         const { boardService } = await import('../../services/boardService.js');
         await boardService.updateActivity(activityId, { list_id: newListId });
 
-        // Mover localmente
         let activity = null;
         let oldList = null;
         for (let list of projectData.lists) {
@@ -446,18 +473,16 @@ async function moveActivity(activityId, newListId) {
     } catch (error) {
         console.error('Erro ao mover atividade:', error);
         alert('Erro ao mover atividade. Tente novamente.');
-        renderBoard(); // Reverter visualmente em caso de erro
+        renderBoard();
     }
 }
 
 async function deleteActivity(activityId) {
     if (confirm('Tem certeza que deseja excluir esta atividade?')) {
         try {
-            // Integração com backend
             const { boardService } = await import('../../services/boardService.js');
             await boardService.deleteActivity(activityId);
 
-            // Remover localmente
             for (let list of projectData.lists) {
                 const activityIndex = list.activities.findIndex(a => a.id === activityId);
                 if (activityIndex !== -1) {
@@ -483,14 +508,6 @@ function findActivityById(activityId) {
     return null;
 }
 
-function getMemberNames(memberIds) {
-    return memberIds.map(id => {
-        const member = projectData.members.find(m => m.id === id);
-        return member ? member.name : 'Usuário não encontrado';
-    }).join(', ');
-}
-
-// View Activity Modal
 function viewActivity(activityId) {
     const result = findActivityById(activityId);
     if (!result) return;
@@ -499,17 +516,14 @@ function viewActivity(activityId) {
 
     document.getElementById('viewActivityTitle').textContent = activity.title;
 
-    // Descrição
     const descriptionEl = document.getElementById('viewActivityDescription');
     descriptionEl.textContent = activity.description || 'Sem descrição';
     descriptionEl.className = activity.description ? 'view-content' : 'view-content empty';
 
-    // Lista
     document.getElementById('viewActivityList').textContent = list.title;
 
-    // Membros - usar grid
     const membersEl = document.getElementById('viewActivityMembers');
-    if (activity.assignedUsers.length > 0) {
+    if (activity.assignedUsers && activity.assignedUsers.length > 0) {
         const memberChips = activity.assignedUsers.map(userId => {
             const member = projectData.members.find(m => m.id === userId);
             return member ? `
@@ -527,22 +541,18 @@ function viewActivity(activityId) {
         membersEl.className = 'view-content empty';
     }
 
-    // Data
     const dateEl = document.getElementById('viewActivityDate');
     dateEl.textContent = activity.date || 'Sem data definida';
     dateEl.className = activity.date ? 'view-content' : 'view-content empty';
 
-    // Prioridade
     const priorityEl = document.getElementById('viewActivityPriority');
     priorityEl.textContent = activity.priority ? getPriorityLabel(activity.priority) : 'Sem prioridade';
     priorityEl.className = activity.priority ? 'view-content' : 'view-content empty';
 
-    // Status
     const statusEl = document.getElementById('viewActivityStatus');
     statusEl.textContent = activity.completed ? 'Concluída' : 'Pendente';
     statusEl.className = 'view-content';
 
-    // Configurar botões de ação
     document.getElementById('editFromViewBtn').onclick = () => editFromView(activityId);
     document.getElementById('deleteFromViewBtn').onclick = () => deleteFromView(activityId);
 
@@ -563,7 +573,6 @@ function deleteFromView(activityId) {
     deleteActivity(activityId);
 }
 
-// Activity Modal Functions
 function openActivityModal(listId = null) {
     updateMemberSelectors();
     updateListSelectors();
@@ -571,7 +580,6 @@ function openActivityModal(listId = null) {
     document.getElementById('activityModalTitle').textContent = 'Nova Atividade';
     document.getElementById('saveActivityBtn').textContent = 'Adicionar';
 
-    // Limpar seleções anteriores
     clearUserSelections();
 
     if (listId) {
@@ -604,7 +612,6 @@ function updateListSelectors() {
     const select = document.getElementById('activityList');
     if (select) {
         select.innerHTML = '';
-
         projectData.lists.forEach(list => {
             const option = document.createElement('option');
             option.value = list.id;
@@ -663,7 +670,6 @@ function setSelectedUsers(userIds) {
     });
 }
 
-// Form Handlers
 async function handleActivitySubmit(e) {
     e.preventDefault();
 
@@ -674,7 +680,6 @@ async function handleActivitySubmit(e) {
     const priority = document.getElementById('activityPriority').value || null;
     const assignedUsers = getSelectedUsers();
 
-    // Formatar data se fornecida
     let formattedDate = '';
     if (date) {
         const dateObj = new Date(date);
@@ -688,7 +693,6 @@ async function handleActivitySubmit(e) {
 
     try {
         if (editingId) {
-            // EDITANDO ATIVIDADE EXISTENTE
             const activityData = {
                 title,
                 description,
@@ -698,17 +702,6 @@ async function handleActivitySubmit(e) {
                 listId
             };
 
-            // TODO: Substituir pela chamada real da API
-            // await fetch(`/api/activities/${editingId}`, {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify(activityData)
-            // });
-
-            // Atualizar localmente (manter até ter API)
             for (let list of projectData.lists) {
                 const activity = list.activities.find(a => a.id === parseInt(editingId));
                 if (activity) {
@@ -718,7 +711,6 @@ async function handleActivitySubmit(e) {
                     activity.priority = priority;
                     activity.assignedUsers = assignedUsers;
 
-                    // Se mudou de lista, mover a atividade
                     if (list.id !== listId) {
                         await moveActivity(activity.id, listId);
                     }
@@ -726,7 +718,6 @@ async function handleActivitySubmit(e) {
                 }
             }
         } else {
-            // CRIANDO NOVA ATIVIDADE via API
             const { boardService } = await import('../../services/boardService.js');
             const newActivityData = {
                 title,
@@ -734,7 +725,6 @@ async function handleActivitySubmit(e) {
                 date: formattedDate,
                 priority,
                 completed: false
-                // assignedUsers pode ser ignorado se não existir no backend
             };
             const createdActivity = await boardService.createActivity(listId, newActivityData);
             const targetList = projectData.lists.find(l => l.id === listId);
@@ -746,7 +736,7 @@ async function handleActivitySubmit(e) {
                     date: createdActivity.date,
                     priority: createdActivity.priority,
                     completed: createdActivity.completed || false,
-                    assignedUsers: createdActivity.assigned_user_ids || []
+                    assignedUsers: assignedUsers
                 });
             }
         }
@@ -764,6 +754,7 @@ async function handleListSubmit(e) {
 
     const title = document.getElementById('listTitle').value.trim();
     const editingId = listForm.getAttribute('data-editing');
+
     try {
         if (!title) {
             alert('Digite o nome da lista.');
@@ -773,8 +764,6 @@ async function handleListSubmit(e) {
         const projectId = getProjectIdFromURL();
         if (!editingId) {
             await boardService.createList(projectId, title);
-        } else {
-            // Edição de lista (não implementado no backend)
         }
         closeListModal();
         await loadProjectData(projectId);
@@ -785,7 +774,6 @@ async function handleListSubmit(e) {
     }
 }
 
-// Activity interaction handlers
 async function toggleActivityComplete(activityId) {
     try {
         let activity = null;
@@ -803,7 +791,7 @@ async function toggleActivityComplete(activityId) {
     } catch (error) {
         console.error('Erro ao alterar status da atividade:', error);
         alert('Erro ao alterar status. Tente novamente.');
-        renderBoard(); // Reverter em caso de erro
+        renderBoard();
     }
 }
 
@@ -824,7 +812,7 @@ function editActivity(activityId) {
     document.getElementById('activityPriority').value = activity.priority || '';
 
     setTimeout(() => {
-        setSelectedUsers(activity.assignedUsers);
+        setSelectedUsers(activity.assignedUsers || []);
     }, 100);
 
     if (activity.date) {
@@ -844,67 +832,13 @@ function editActivity(activityId) {
     activityModal.style.display = 'block';
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-        day: 'numeric',
-        month: 'long'
-    });
-}
-
 function toggleMembersPopup() {
     const popup = document.getElementById('membersPopup');
     if (popup) {
         if (popup.style.display === 'block') {
             closeMembersPopup();
         } else {
-            const content = document.getElementById('membersPopupContent');
-            if (content) {
-                // Buscar membros da equipe do projeto no backend
-                (async () => {
-                    try {
-                        // Descobrir o teamId do projeto usando o novo endpoint
-                        const projectId = getProjectIdFromURL();
-                        const resTeam = await fetch(`${API_URL}/api/projects/${projectId}/team`);
-                        if (!resTeam.ok) {
-                            content.innerHTML = '<p style="color: #dc3545; font-style: italic; text-align: center;">Erro ao buscar equipe do projeto</p>';
-                            openMembersPopup();
-                            return;
-                        }
-                        const team = await resTeam.json();
-                        const teamId = team.id;
-                        if (!teamId) {
-                            content.innerHTML = '<p style="color: #6c757d; font-style: italic; text-align: center;">Projeto sem equipe associada</p>';
-                            openMembersPopup();
-                            return;
-                        }
-                        // Buscar membros da equipe
-                        const resMembros = await fetch(`${API_URL}/api/teams/${teamId}/members`);
-                        let membros = [];
-                        if (resMembros.ok) {
-                            membros = await resMembros.json();
-                        }
-                        // Exibir membros no modal
-                        if (membros.length > 0) {
-                            content.innerHTML = `
-                                <div class="members-popup-grid">
-                                    ${membros.map(membro => `
-                                        <div class="popup-member-chip">
-                                            <i class="fas fa-user"></i>
-                                            <span class="popup-member-name">${membro.name}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            `;
-                        } else {
-                            content.innerHTML = '<p style="color: #6c757d; font-style: italic; text-align: center;">Nenhum membro encontrado</p>';
-                        }
-                    } catch (err) {
-                        content.innerHTML = '<p style="color: #dc3545; font-style: italic; text-align: center;">Erro ao buscar membros</p>';
-                    }
-                    openMembersPopup();
-                })();
-            }
+            openMembersPopup();
         }
     }
 }
@@ -938,5 +872,77 @@ function closeMembersPopup() {
     const popup = document.getElementById('membersPopup');
     if (popup) {
         popup.style.display = 'none';
+    }
+}
+
+// Modal para adicionar membro
+function openAddMemberModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Adicionar Membro à Equipe</h3>
+                <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="memberEmail">E-mail do usuário:</label>
+                    <input type="email" id="memberEmail" placeholder="Digite o e-mail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="margin-top: 15px; text-align: right;">
+                    <button onclick="this.closest('.modal').remove()" style="margin-right: 10px; padding: 8px 16px; background: #f4f5f7; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+                    <button onclick="addMemberToTeam()" style="padding: 8px 16px; background: #026aa7; color: white; border: none; border-radius: 4px; cursor: pointer;">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+async function addMemberToTeam() {
+    const email = document.getElementById('memberEmail').value.trim();
+    if (!email) {
+        alert('Digite o e-mail do usuário');
+        return;
+    }
+
+    try {
+        const projectId = getProjectIdFromURL();
+        const teamRes = await fetch(`${API_URL}/api/projects/${projectId}/team`);
+
+        if (!teamRes.ok) {
+            throw new Error('Erro ao buscar equipe do projeto');
+        }
+
+        const team = await teamRes.json();
+        if (!team.id) {
+            alert('Projeto sem equipe associada');
+            return;
+        }
+
+        const res = await fetch(`${API_URL}/api/teams/${team.id}/add-member`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok || data.error) {
+            alert(data.error || 'Erro ao adicionar membro');
+            return;
+        }
+
+        alert('Membro adicionado com sucesso!');
+        document.querySelector('.modal').remove();
+
+        // Recarregar dados do projeto para atualizar lista de membros
+        await loadProjectData(projectId);
+        renderBoard();
+    } catch (error) {
+        console.error('Erro ao adicionar membro:', error);
+        alert('Erro ao adicionar membro. Tente novamente.');
     }
 }
