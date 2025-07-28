@@ -111,7 +111,7 @@ async function loadUserProjects() {
             document.querySelectorAll('.view-project-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     const projectId = button.getAttribute('data-project-id');
-                    window.location.href = `../quadro/quadro.html?id=${projectId}`;
+                    window.location.href = `../quadro/quadro.html?projectId=${projectId}`;
                 });
             });
         } else {
