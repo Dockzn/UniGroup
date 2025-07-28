@@ -1,4 +1,5 @@
 .navbar {
+  background: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -10,57 +11,83 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1500px;
+  max-width: 1400px;
   margin: 0 auto;
-  height: 60px;
+  height: 70px;
+  padding: 0 20px;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 80px;
+  max-width: 250px;
+  overflow: hidden;
+  height: 50px;
 }
 
 .navbar-logo img {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100px;
-}
-
-.navbar-logo i,
-.navbar-usuario i {
-  font-size: 24px;
-  color: yellow;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.navbar-usuario {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-}
-
-.button-user {
-  background: none;
-  border: none;
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  height: auto;
   cursor: pointer;
-  color: yellow;
-  font-size: 24px;
+  transition: all 0.3s ease;
+  object-fit: contain;
+  display: block;
+}
+
+.navbar-logo img:hover {
+  transform: scale(1.05);
 }
 
 .navbar-links {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
+  flex: 1;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 20px;
 }
 
 .search-input {
+  flex: 1;
+  max-width: 350px;
+  min-width: 200px;
   padding: 8px 15px;
   border-radius: 10px;
   border: 1px solid #003566;
-  width: 350px;
+  background: white;
   color: #003566;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: #666;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #002a4d;
+  box-shadow: 0 0 0 2px rgba(0, 53, 102, 0.1);
+}
+
+.search-icon {
+  display: none;
+  color: #003566;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.search-icon:hover {
+  background: rgba(0, 53, 102, 0.1);
 }
 
 .button-newproject {
@@ -70,4 +97,294 @@
   padding: 8px 16px;
   border-radius: 10px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.button-newproject:hover {
+  background-color: #002a4d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
+}
+
+.new-project-icon {
+  display: none;
+  color: #003566;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  background: rgba(0, 53, 102, 0.1);
+  flex-shrink: 0;
+}
+
+.new-project-icon:hover {
+  background: rgba(0, 53, 102, 0.2);
+  transform: scale(1.1);
+}
+
+.navbar-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+.mobile-icons {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: fit-content;
+}
+
+.user-name {
+  color: #003566;
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.logout-btn {
+  background: transparent;
+  color: #003566;
+  border: 1px solid #003566;
+  padding: 6px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.logout-btn:hover {
+  background: #003566;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.button-user {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #003566;
+  font-size: 28px;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.button-user:hover {
+  background: rgba(0, 53, 102, 0.1);
+  transform: scale(1.1);
+}
+
+/* Responsividade para tablets */
+@media (max-width: 1024px) {
+  .navbar-container {
+    height: 65px;
+    padding: 0 16px;
+  }
+
+  .navbar-links {
+    margin: 0 16px;
+  }
+
+  .search-input {
+    max-width: 280px;
+    min-width: 180px;
+  }
+
+  .button-newproject {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .user-name {
+    max-width: 100px;
+  }
+}
+
+/* Responsividade para telas médias */
+@media (max-width: 900px) {
+  .navbar-container {
+    padding: 0 12px;
+  }
+
+  .navbar-links {
+    margin: 0 12px;
+  }
+
+  .search-input {
+    max-width: 240px;
+    min-width: 160px;
+  }
+
+  .button-newproject {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .user-name {
+    max-width: 90px;
+  }
+
+  .logout-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+  .navbar-container {
+    height: 60px;
+    padding: 0 12px;
+  }
+
+  .navbar-logo {
+    height: 40px;
+    min-width: 70px;
+    max-width: 180px;
+  }
+
+  .navbar-logo img {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+  }
+
+  .navbar-links {
+    margin: 0 8px;
+    gap: 12px;
+  }
+
+  /* Esconder elementos desktop no mobile */
+  .search-input,
+  .button-newproject {
+    display: none;
+  }
+
+  /* Mostrar ícones mobile */
+  .search-icon,
+  .new-project-icon {
+    display: block;
+  }
+
+  .user-info {
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .user-name {
+    max-width: 80px;
+    font-size: 12px;
+  }
+
+  .logout-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+}
+
+/* Mobile muito pequeno */
+@media (max-width: 480px) {
+  .navbar-container {
+    padding: 0 8px;
+    gap: 8px;
+  }
+
+  .navbar-logo {
+    height: 35px;
+    min-width: 60px;
+    max-width: 140px;
+  }
+
+  .navbar-logo img {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+  }
+
+  .navbar-links {
+    gap: 6px;
+    margin: 0 6px;
+  }
+
+  .search-icon,
+  .new-project-icon {
+    font-size: 18px;
+    padding: 8px;
+  }
+
+  .user-name {
+    max-width: 60px;
+    font-size: 11px;
+  }
+
+  .logout-btn {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+
+  .navbar-usuario {
+    gap: 6px;
+  }
+}
+
+/* Telas muito pequenas - esconder nome do usuário */
+@media (max-width: 360px) {
+  .user-name {
+    display: none;
+  }
+
+  .navbar-container {
+    padding: 0 6px;
+  }
+
+  .logout-btn {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+}
+
+/* Animações */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navbar {
+  animation: slideDown 0.5s ease forwards;
 }

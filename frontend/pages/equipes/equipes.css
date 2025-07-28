@@ -488,3 +488,79 @@ hr {
   background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
   margin: 32px 0;
 }
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .colum1 {
+    width: 100%;
+  }
+
+  .menu {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .item-menu {
+    white-space: nowrap;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .navbar-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .search-input {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .equipes {
+    padding: 20px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group button {
+    width: 100%;
+  }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.equipes,
+.card-equipe,
+.membro-item {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.equipes {
+  animation-delay: 0.1s;
+}
+
+.card-equipe:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.membro-item:nth-child(even) {
+  animation-delay: 0.3s;
+}
