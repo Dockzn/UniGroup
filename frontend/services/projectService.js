@@ -4,16 +4,14 @@ import { authService } from './authService.js';
 const IS_LOCAL = false;
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 
-async function createProject(teamId, name, description, dueDate) {
+async function createProject({ name, teamId, userId }) {
     try {
-        const token = localStorage.getItem('token');
         const response = await fetch(`${API_URL}/api/projects`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ teamId, name, description, dueDate })
+            body: JSON.stringify({ name, teamId, userId })
         });
         return await response.json();
     } catch (error) {
@@ -69,14 +67,9 @@ async function toggleArchive(projectId) {
     }
 }
 
-async function getUserProjects() {
+async function getUserProjects(userId) {
     try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/api/projects/user`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        const response = await fetch(`${API_URL}/api/projects?userId=${userId}`);
         return await response.json();
     } catch (error) {
         console.error('Erro ao obter projetos do usuário:', error);

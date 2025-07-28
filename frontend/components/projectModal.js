@@ -8,9 +8,7 @@ export class ProjectModal {
   }
 
   async init() {
-    // Criar a estrutura do modal
-    this.createModalStructure();
-    
+    await this.createModalStructure();
     try {
       // Carregar as equipes do usuário
       this.teams = await teamService.listTeams();
@@ -18,14 +16,30 @@ export class ProjectModal {
     } catch (error) {
       console.error('Erro ao carregar equipes:', error);
     }
-
-    // Adicionar eventos
-    this.attachEvents();
   }
 
-  createModalStructure() {
-    // Criar o elemento do modal se não existir
+  async createModalStructure() {
     if (!document.getElementById('project-modal')) {
+      let teamName = '';
+      let teamId = '';
+      const user = localStorage.getItem('user');
+      if (user) {
+        try {
+          const userObj = JSON.parse(user);
+          if (userObj.team_id) {
+            teamId = userObj.team_id;
+            const IS_LOCAL = true; 
+            const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
+            try {
+              const res = await fetch(`${API_URL}/api/teams/${teamId}`);
+              if (res.ok) {
+                const team = await res.json();
+                teamName = team.name;
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+      }
       const modalHTML = `
         <div id="project-modal" class="modal">
           <div class="modal-content">
@@ -37,10 +51,9 @@ export class ProjectModal {
                 <input type="text" id="project-name" name="name" required>
               </div>
               <div class="form-group">
-                <label for="project-team">Nome da equipe</label>
-                <select id="project-team" name="teamId" required>
-                  <option value="">Selecione uma equipe</option>
-                </select>
+                <label for="project-team-static">Nome da equipe</label>
+                <input type="text" id="project-team-static" value="${teamName}" disabled style="background:#f5f5f5;">
+                <input type="hidden" id="project-team-id" name="teamId" value="${teamId}">
               </div>
               <div class="form-actions">
                 <button type="button" id="cancel-project">Cancelar</button>
@@ -56,49 +69,30 @@ export class ProjectModal {
       document.body.appendChild(modalContainer.firstElementChild);
       
       this.modal = document.getElementById('project-modal');
+      this.attachEvents();
     } else {
       this.modal = document.getElementById('project-modal');
-    }
-  }
-
-  populateTeamSelect() {
-    const teamSelect = this.modal.querySelector('#project-team');
-    teamSelect.innerHTML = '<option value="">Selecione uma equipe</option>';
-    
-    if (this.teams && this.teams.length > 0) {
-      this.teams.forEach(team => {
-        const option = document.createElement('option');
-        option.value = team.id;
-        option.textContent = team.name;
-        teamSelect.appendChild(option);
-      });
-    } else {
-      const option = document.createElement('option');
-      option.disabled = true;
-      option.textContent = 'Nenhuma equipe encontrada';
-      teamSelect.appendChild(option);
+      this.attachEvents();
     }
   }
 
   attachEvents() {
-    // Fechar o modal ao clicar no X
     const closeBtn = this.modal.querySelector('.close');
-    closeBtn.onclick = () => this.close();
-    
-    // Fechar o modal ao clicar fora dele
-    window.onclick = (event) => {
-      if (event.target === this.modal) {
-        this.close();
-      }
-    };
-    
-    // Fechar o modal ao clicar em cancelar
+    closeBtn.onclick = () => this.removeModal();
+
+    window.addEventListener('mousedown', this._outsideClickHandler);
+
     const cancelBtn = this.modal.querySelector('#cancel-project');
-    cancelBtn.onclick = () => this.close();
-    
-    // Submeter o formulário
+    cancelBtn.onclick = () => this.removeModal();
+
     const form = this.modal.querySelector('#create-project-form');
     form.onsubmit = (e) => this.handleSubmit(e);
+  }
+
+  _outsideClickHandler = (event) => {
+    if (this.modal && event.target === this.modal) {
+      this.removeModal();
+    }
   }
 
   async handleSubmit(event) {
@@ -108,36 +102,32 @@ export class ProjectModal {
     const formData = new FormData(form);
     
     try {
+      const user = localStorage.getItem('user');
+      let userId = null;
+      if (user) {
+        try {
+          const userObj = JSON.parse(user);
+          userId = userObj.id;
+        } catch (e) {}
+      }
       const projectData = {
         name: formData.get('name'),
-        teamId: formData.get('teamId')
+        teamId: formData.get('teamId'),
+        userId: userId
       };
-      
-      // Validar dados
-      if (!projectData.name || !projectData.teamId) {
+      if (!projectData.name || !projectData.teamId || !projectData.userId) {
         alert('Por favor, preencha todos os campos obrigatórios');
         return;
       }
-      
-      // Enviar para a API
-      const response = await projectService.createProject(
-        projectData.teamId,
-        projectData.name,
-        "", // Descrição vazia
-        null // Sem data de conclusão
-      );
-      
-      if (response) {
+      const response = await projectService.createProject(projectData);
+
+      if (response && response.project && response.project.id) {
         alert('Projeto criado com sucesso!');
         this.close();
-        
-        // Redirecionar para a página do projeto se necessário
-        if (response.project && response.project.id) {
-          window.location.href = `../quadro/quadro.html?id=${response.project.id}`;
-        } else {
-          // Ou apenas recarregar a página atual
-          window.location.reload();
-        }
+        window.location.href = `../quadro/quadro.html?id=${response.project.id}`;
+      } else {
+        alert('Projeto criado, mas não foi possível redirecionar.');
+        window.location.reload();
       }
     } catch (error) {
       console.error('Erro ao criar projeto:', error);
@@ -152,10 +142,14 @@ export class ProjectModal {
   }
 
   close() {
+    this.removeModal();
+  }
+
+  removeModal() {
     if (this.modal) {
-      this.modal.style.display = 'none';
-      // Limpar o formulário
-      this.modal.querySelector('#create-project-form').reset();
+      window.removeEventListener('mousedown', this._outsideClickHandler);
+      this.modal.parentNode.removeChild(this.modal);
+      this.modal = null;
     }
   }
 }

@@ -26,7 +26,23 @@ module.exports = (sequelize, DataTypes) => {
         model: 'Teams',
         key: 'id'
       }
-    }
+    },
+    project_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Projects',
+        key: 'id'
+      }
+    },
+   project_id: {
+     type: DataTypes.INTEGER,
+     allowNull: true,
+     references: {
+       model: 'Projects',
+       key: 'id'
+     }
+   },
   }, {});
 
   User.associate = function(models) {

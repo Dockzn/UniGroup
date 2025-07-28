@@ -1,6 +1,6 @@
 const db = require('../../sequelize/models/index');
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 
 const authController = {
     register: async (req, res) => {
@@ -55,7 +55,8 @@ const authController = {
                 user: {
                     id: user.id,
                     name: user.name,
-                    email: user.email
+                    email: user.email,
+                    team_id: user.team_id || null
                 }
             })
 

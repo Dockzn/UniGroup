@@ -3,37 +3,28 @@ const db = require('../../sequelize/models');
 const projectController = {
     create: async (req, res) => {
         try {
-            const { name, description, teamId, dueDate } = req.body;
-            const userId = req.user.id;
-
-            const team = await db.Team.findOne({
-                include: [{
-                    model: db.User,
-                    as: 'members',
-                    where: { id: userId }
-                }],
-                where: { id: teamId }
-            });
-
-            if (!team) {
-                return res.status(403).json({
-                    message: 'Você não tem permissão para criar projetos nesta equipe'
-                });
+            const { name, teamId, userId } = req.body;
+            if (!name || !teamId || !userId) {
+                return res.status(400).json({ message: 'Campos obrigatórios: name, teamId, userId' });
             }
 
+            // Verifica se o usuário faz parte da equipe
+            const team = await db.Team.findOne({
+                where: { id: teamId },
+                include: [{ model: db.User, as: 'members', where: { id: userId } }]
+            });
+            if (!team) {
+                return res.status(403).json({ message: 'Você não faz parte desta equipe' });
+            }
+
+            // Cria o projeto
             const project = await db.Project.create({
                 name,
-                description,
-                teamId,
-                ownerId: userId,
-                dueDate
+                teamId
             });
 
-            await db.UserProjects.create({
-                userId,
-                projectId: project.id,
-                role: 'owner'
-            });
+            // Atualiza o campo project_id do usuário criador
+            await db.User.update({ project_id: project.id }, { where: { id: userId } });
 
             res.status(201).json({
                 message: 'Projeto criado com sucesso',
@@ -155,33 +146,24 @@ const projectController = {
 
     getUserProjects: async (req, res) => {
         try {
-            const userId = req.user.id;
-
-            const userProjects = await db.User.findOne({
+            const userId = req.query.userId;
+            if (!userId) {
+                return res.status(400).json({ message: 'userId é obrigatório na query' });
+            }
+            // Busca o usuário e sua equipe
+            const user = await db.User.findOne({
                 where: { id: userId },
-                include: [
-                    {
-                        model: db.Project,
-                        as: 'projects',
-                        include: [
-                            {
-                                model: db.Team,
-                                as: 'team',
-                                attributes: ['id', 'name']
-                            }
-                        ],
-                        through: {
-                            attributes: ['role', 'favorite']
-                        }
-                    }
-                ]
+                include: [{ model: db.Team, as: 'team', include: [{ model: db.User, as: 'members' }] }]
             });
-
-            if (!userProjects || !userProjects.projects) {
+            if (!user || !user.team) {
                 return res.json([]);
             }
-
-            res.json(userProjects.projects);
+            // Busca todos projetos da equipe do usuário
+            const projects = await db.Project.findAll({
+                where: { teamId: user.team_id },
+                include: [{ model: db.Team, as: 'team', include: [{ model: db.User, as: 'members' }] }]
+            });
+            res.json(projects);
         } catch (error) {
             res.status(500).json({
                 message: 'Erro ao obter projetos do usuário',

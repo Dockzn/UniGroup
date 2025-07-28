@@ -6,29 +6,43 @@ const currentUser = authService.getCurrentUser();
 
 async function loadUserTeams() {
     try {
-        const teams = await teamService.listTeams();
+        const user = localStorage.getItem('user');
+        let userTeamId = null;
+        let userTeamName = '';
+        if (user) {
+            try {
+                const userObj = JSON.parse(user);
+                userTeamId = userObj.team_id;
+                userTeamName = userObj.team_name || '';
+            } catch (e) {}
+        }
         const teamContainer = document.querySelector('.equipes .card-equipe');
-        
-        if (teams && teams.length > 0) {
+        if (userTeamId) {
+            const res = await fetch(`../../../../backend/src/routes/teamRoutes.js/${userTeamId}`);
+            let team = null;
+            try {
+                team = await res.json();
+            } catch (e) {}
             teamContainer.innerHTML = '';
-            
-            teams.forEach(team => {
+            if (team && team.name) {
                 const teamCard = document.createElement('div');
                 teamCard.className = 'team-card';
+                teamCard.style.backgroundImage = "url('../../assets/images/imagem-projeto.png')";
+                teamCard.style.backgroundSize = 'cover';
+                teamCard.style.backgroundPosition = 'center';
+                teamCard.style.borderRadius = '12px';
+                teamCard.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                teamCard.style.margin = '16px 0';
+                teamCard.style.padding = '16px';
+                teamCard.style.color = '#222';
                 teamCard.innerHTML = `
-                    <h3>${team.name}</h3>
-                    <p>${team.description || 'Sem descrição'}</p>
-                    <button class="view-team-btn" data-team-id="${team.id}">Ver Equipe</button>
+                    <div style="background:rgba(255,255,255,0.85);padding:18px 12px 12px 12px;border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;">
+                        <h3 style="margin:0 0 8px 0;font-size:1.3em;">${team.name}</h3>
+                        <p style="margin:0 0 0 0;">${team.description || 'Sem descrição'}</p>
+                    </div>
                 `;
                 teamContainer.appendChild(teamCard);
-            });
-            
-            document.querySelectorAll('.view-team-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    const teamId = button.getAttribute('data-team-id');
-                    window.location.href = `../equipes/equipes.html?id=${teamId}`;
-                });
-            });
+            }
         } else {
             teamContainer.innerHTML = `
                 <div class="empty-state">
@@ -36,7 +50,6 @@ async function loadUserTeams() {
                     <button id="create-team-btn">Criar Equipe</button>
                 </div>
             `;
-            
             document.getElementById('create-team-btn')?.addEventListener('click', () => {
                 window.location.href = '../equipes/equipes.html';
             });
@@ -63,24 +76,38 @@ function showWelcomeMessage() {
 
 async function loadUserProjects() {
     try {
-        const projects = await projectService.getUserProjects();
+        const user = localStorage.getItem('user');
+        let userId = null;
+        if (user) {
+            try {
+                const userObj = JSON.parse(user);
+                userId = userObj.id;
+            } catch (e) {}
+        }
+        const projects = await projectService.getUserProjects(userId);
         const projectContainer = document.querySelector('.recentemente-vizualizado .card-equipe');
-        
         if (projects && projects.length > 0) {
             projectContainer.innerHTML = '';
-            
             projects.forEach(project => {
                 const projectCard = document.createElement('div');
                 projectCard.className = 'project-card';
+                projectCard.style.backgroundImage = "url('../../assets/images/fundo de equipe_e_trabalho.jpg')";
+                projectCard.style.backgroundSize = 'cover';
+                projectCard.style.backgroundPosition = 'center';
+                projectCard.style.borderRadius = '12px';
+                projectCard.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                projectCard.style.margin = '16px 0';
+                projectCard.style.padding = '16px';
+                projectCard.style.color = '#222';
                 projectCard.innerHTML = `
-                    <h3>${project.name}</h3>
-                    <p>${project.description || 'Sem descrição'}</p>
-                    <p class="project-team">Equipe: ${project.team ? project.team.name : 'Sem equipe'}</p>
-                    <button class="view-project-btn" data-project-id="${project.id}">Abrir Quadro</button>
+                    <div style="background:rgba(255,255,255,0.85);padding:12px;border-radius:8px;">
+                        <h3 style="margin:0 0 8px 0;">${project.name}</h3>
+                        <p class="project-team" style="margin:0 0 12px 0;">Equipe: ${project.team ? project.team.name : 'Sem equipe'}</p>
+                        <button class="view-project-btn" data-project-id="${project.id}" style="padding:6px 16px;border-radius:6px;border:none;background:#28a745;color:#fff;cursor:pointer;">Abrir Quadro</button>
+                    </div>
                 `;
                 projectContainer.appendChild(projectCard);
             });
-            
             document.querySelectorAll('.view-project-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     const projectId = button.getAttribute('data-project-id');
@@ -91,17 +118,8 @@ async function loadUserProjects() {
             projectContainer.innerHTML = `
                 <div class="empty-state">
                     <p>Você não tem projetos recentes.</p>
-                    <button id="create-project-btn">Criar Projeto</button>
                 </div>
             `;
-            
-            document.getElementById('create-project-btn')?.addEventListener('click', () => {
-                if (window.projectModal) {
-                    window.projectModal.open();
-                } else {
-                    alert('O modal de criação de projetos não está disponível.');
-                }
-            });
         }
     } catch (error) {
         console.error('Erro ao carregar projetos:', error);
