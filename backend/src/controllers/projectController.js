@@ -1,6 +1,26 @@
 const db = require('../../sequelize/models');
 
 const projectController = {
+    // Busca o time do projeto
+    getProjectTeam: async (req, res) => {
+        try {
+            const projectId = req.params.projectId;
+            const project = await db.Project.findByPk(projectId);
+            if (!project) {
+                return res.status(404).json({ error: 'Projeto não encontrado' });
+            }
+            if (!project.teamId) {
+                return res.status(404).json({ error: 'Projeto não possui equipe associada' });
+            }
+            const team = await db.Team.findByPk(project.teamId);
+            if (!team) {
+                return res.status(404).json({ error: 'Equipe não encontrada' });
+            }
+            return res.json(team);
+        } catch (err) {
+            return res.status(500).json({ error: 'Erro ao buscar equipe do projeto', details: err.message });
+        }
+    },
     create: async (req, res) => {
         try {
             const { name, teamId, userId } = req.body;
@@ -37,7 +57,6 @@ const projectController = {
             });
         }
     },
-
     list: async (req, res) => {
         try {
             const { teamId } = req.params;
@@ -67,7 +86,6 @@ const projectController = {
             });
         }
     },
-
     toggleFavorite: async (req, res) => {
         try {
             const { projectId } = req.params;
@@ -100,7 +118,6 @@ const projectController = {
             });
         }
     },
-
     archive: async (req, res) => {
         try {
             const { projectId } = req.params;
@@ -143,7 +160,6 @@ const projectController = {
             });
         }
     },
-
     getUserProjects: async (req, res) => {
         try {
             const userId = req.query.userId;

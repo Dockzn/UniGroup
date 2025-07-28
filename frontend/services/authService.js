@@ -1,5 +1,5 @@
 // Para alternar entre ambiente local e remoto, mude  IS_LOCAL
-const IS_LOCAL = false; // Definido como false para usar o servidor remoto
+const IS_LOCAL = false; // Definido como true para usar o servidor local
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 
 async function login(email, password) {

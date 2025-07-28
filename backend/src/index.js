@@ -13,10 +13,12 @@ const { sessionMiddleware, sessionAuth } = require('./middlewares/sessionAuth');
 app.use(cors())
 app.use(express.json())
 
+const boardRoutes = require('./routes/boardRoutes')
 app.use('/api/auth', authRoutes)
 app.use('/api/session', sessionRoutes)
 app.use('/api/teams', teamRoutes)
 app.use('/api/projects', projectRoutes)
+app.use('/api', boardRoutes)
 
 app.use((err, req, res, next) => {
   console.error(err.stack)

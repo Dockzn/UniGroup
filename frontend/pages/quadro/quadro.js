@@ -1,4 +1,6 @@
 
+const IS_LOCAL = false;
+const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 // Mock data
 let projectData = {};
 
@@ -8,174 +10,34 @@ function getProjectIdFromURL() {
 }
 
 async function loadProjectData(projectId) {
-    // Substituir os dados abaixo pela chamada da API
-
-    if (projectId === "1") {
-        projectData = {
-            name: "Desenvolvimento Web",
-            members: [
-                { id: 1, name: "João Silva" },
-                { id: 2, name: "Maria Santos" },
-                { id: 3, name: "Pedro Costa" },
-                { id: 4, name: "Ana Lima" }
-            ],
-            lists: [
-                {
-                    id: 1,
-                    title: "Planejamento",
-                    activities: [
-                        {
-                            id: 1,
-                            title: "Definir escopo do projeto",
-                            description: "Reunir com stakeholders e definir todos os requisitos do projeto",
-                            date: "10 de julho",
-                            priority: "media",
-                            assignedUsers: [1, 2],
-                            completed: false
-                        },
-                        {
-                            id: 2,
-                            title: "Criar estrutura inicial",
-                            description: "Configurar ambiente de desenvolvimento e estrutura de pastas",
-                            date: "11 de julho",
-                            priority: "baixa",
-                            assignedUsers: [3],
-                            completed: false
-                        },
-                        {
-                            id: 3,
-                            title: "Reunir requisitos com o cliente",
-                            description: "Sessão de levantamento de requisitos funcionais e não funcionais",
-                            date: "12 de julho",
-                            priority: "alta",
-                            assignedUsers: [1],
-                            completed: false
-                        }
-                    ]
-                },
-                {
-                    id: 2,
-                    title: "Backlog",
-                    activities: [
-                        {
-                            id: 4,
-                            title: "Desenhar wireframe da home",
-                            description: "Criar wireframes responsivos para desktop e mobile",
-                            date: "14 de julho",
-                            priority: "media",
-                            assignedUsers: [2],
-                            completed: false
-                        },
-                        {
-                            id: 5,
-                            title: "Especificar funcionalidades do login",
-                            description: "Documentar fluxo de autenticação e autorização",
-                            date: "",
-                            priority: "baixa",
-                            assignedUsers: [],
-                            completed: false
-                        }
-                    ]
-                },
-                {
-                    id: 3,
-                    title: "Em desenvolvimento",
-                    activities: [
-                        {
-                            id: 6,
-                            title: "Implementar layout responsivo da landing page",
-                            description: "Desenvolver página inicial com design responsivo",
-                            date: "15 de julho",
-                            priority: "alta",
-                            assignedUsers: [1, 3],
-                            completed: false
-                        },
-                        {
-                            id: 7,
-                            title: "Criar componentes do header e footer",
-                            description: "Componentizar elementos reutilizáveis da interface",
-                            date: "15 de julho",
-                            priority: "media",
-                            assignedUsers: [4],
-                            completed: false
-                        },
-                        {
-                            id: 8,
-                            title: "Integrar API de autenticação",
-                            description: "Implementar login/logout e gerenciamento de sessão",
-                            date: "16 de julho",
-                            priority: "alta",
-                            assignedUsers: [2, 3],
-                            completed: false
-                        }
-                    ]
-                },
-                {
-                    id: 4,
-                    title: "Concluído",
-                    activities: [
-                        {
-                            id: 9,
-                            title: "Setup inicial do projeto (HTML, CSS, JS)",
-                            description: "Configuração inicial do projeto com estrutura base",
-                            date: "09 de julho",
-                            priority: "media",
-                            assignedUsers: [1],
-                            completed: true
-                        },
-                        {
-                            id: 10,
-                            title: "Criação do repositório no GitHub",
-                            description: "Configurar repositório e estrutura de versionamento",
-                            date: "09 de julho",
-                            priority: "baixa",
-                            assignedUsers: [1],
-                            completed: true
-                        },
-                        {
-                            id: 11,
-                            title: "Configuração do ambiente de desenvolvimento",
-                            description: "Instalar e configurar ferramentas de desenvolvimento",
-                            date: "10 de julho",
-                            priority: "media",
-                            assignedUsers: [1, 3],
-                            completed: true
-                        }
-                    ]
-                }
-            ]
-        };
-    } else if (projectId === "2") {
-        projectData = {
-            name: "Projeto de Marketing",
-            members: [
-                { id: 1, name: "Carlos Silva" },
-                { id: 2, name: "Lucia Santos" }
-            ],
-            lists: [
-                {
-                    id: 1,
-                    title: "Planejamento",
-                    activities: [
-                        {
-                            id: 1,
-                            title: "Criar campanha publicitária",
-                            description: "Desenvolver estratégia de marketing digital",
-                            date: "20 de julho",
-                            priority: "alta",
-                            assignedUsers: [1],
-                            completed: false
-                        }
-                    ]
-                }
-            ]
-        };
-    } else {
-        projectData = {
-            name: "Projeto desconhecido",
-            members: [],
-            lists: []
-        };
+    projectData = {
+        name: "Projeto",
+        members: [],
+        lists: []
+    };
+    try {
+        const { boardService } = await import('../../services/boardService.js');
+        const lists = await boardService.getListsByProject(projectId);
+        const listsWithActivities = await Promise.all(lists.map(async (list) => {
+            const activities = await boardService.getActivitiesByList(list.id);
+            return {
+                id: list.id,
+                title: list.name,
+                activities: activities.map(activity => ({
+                    id: activity.id,
+                    title: activity.title,
+                    description: activity.description,
+                    date: activity.date,
+                    priority: activity.priority,
+                    assignedUsers: activity.assigned_user_ids || [],
+                    completed: activity.completed
+                }))
+            };
+        }));
+        projectData.lists = listsWithActivities;
+    } catch (error) {
+        console.error('Erro ao carregar listas/atividades:', error);
+        projectData.lists = [];
     }
 }
 
@@ -192,6 +54,18 @@ const viewActivityModal = document.getElementById('viewActivityModal');
 const listModal = document.getElementById('listModal');
 const activityForm = document.getElementById('activityForm');
 const listForm = document.getElementById('listForm');
+
+// Área de debug simples
+let debugArea = document.getElementById('debugArea');
+if (!debugArea) {
+    debugArea = document.createElement('div');
+    debugArea.id = 'debugArea';
+    debugArea.style = 'background:#f8f9fa;border:1px solid #ccc;padding:8px;margin:8px 0;font-size:13px;color:#333;';
+    document.body.insertBefore(debugArea, document.body.firstChild);
+}
+function printDebug(msg) {
+    debugArea.innerHTML += `<div>${msg}</div>`;
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function () {
@@ -226,7 +100,10 @@ function setupEventListeners() {
     // Header actions
     const btnCreateList = document.querySelector('.btn-create-list');
     if (btnCreateList) {
-        btnCreateList.addEventListener('click', openListModal);
+        btnCreateList.addEventListener('click', function() {
+            document.getElementById('listTitle').value = '';
+            openListModal();
+        });
     }
 
     // Form submissions
@@ -263,10 +140,14 @@ function renderBoard() {
 
     board.innerHTML = '';
 
-    projectData.lists.forEach(list => {
-        const listElement = createListElement(list);
-        board.appendChild(listElement);
-    });
+    if (projectData.lists && projectData.lists.length > 0) {
+        projectData.lists.forEach(list => {
+            const listElement = createListElement(list);
+            board.appendChild(listElement);
+        });
+    } else {
+        board.innerHTML = '<div style="color:#888;padding:40px;text-align:center;width:100%;">Nenhuma lista encontrada para este projeto.<br>Crie uma nova lista para começar.</div>';
+    }
 
     updateListSelectors();
 }
@@ -540,20 +421,13 @@ function handleDrop(e) {
 // Activity Management
 async function moveActivity(activityId, newListId) {
     try {
-        // TODO: Substituir pela chamada real da API
-        // await fetch(`/api/activities/${activityId}/move`, {
-        //     method: 'PUT',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'Authorization': `Bearer ${token}`
-        //     },
-        //     body: JSON.stringify({ listId: newListId })
-        // });
+        // Integração com backend
+        const { boardService } = await import('../../services/boardService.js');
+        await boardService.updateActivity(activityId, { list_id: newListId });
 
-        // Mover localmente (manter até ter API)
+        // Mover localmente
         let activity = null;
         let oldList = null;
-
         for (let list of projectData.lists) {
             const activityIndex = list.activities.findIndex(a => a.id === activityId);
             if (activityIndex !== -1) {
@@ -563,7 +437,6 @@ async function moveActivity(activityId, newListId) {
                 break;
             }
         }
-
         if (activity) {
             const newList = projectData.lists.find(l => l.id === newListId);
             if (newList) {
@@ -580,13 +453,11 @@ async function moveActivity(activityId, newListId) {
 async function deleteActivity(activityId) {
     if (confirm('Tem certeza que deseja excluir esta atividade?')) {
         try {
-            // TODO: Substituir pela chamada real da API
-            // await fetch(`/api/activities/${activityId}`, {
-            //     method: 'DELETE',
-            //     headers: { 'Authorization': `Bearer ${token}` }
-            // });
+            // Integração com backend
+            const { boardService } = await import('../../services/boardService.js');
+            await boardService.deleteActivity(activityId);
 
-            // Remover localmente (manter até ter API)
+            // Remover localmente
             for (let list of projectData.lists) {
                 const activityIndex = list.activities.findIndex(a => a.id === activityId);
                 if (activityIndex !== -1) {
@@ -855,37 +726,28 @@ async function handleActivitySubmit(e) {
                 }
             }
         } else {
-            // CRIANDO NOVA ATIVIDADE
+            // CRIANDO NOVA ATIVIDADE via API
+            const { boardService } = await import('../../services/boardService.js');
             const newActivityData = {
                 title,
                 description,
                 date: formattedDate,
                 priority,
-                assignedUsers,
-                listId,
                 completed: false
+                // assignedUsers pode ser ignorado se não existir no backend
             };
-
-            // TODO: Substituir pela chamada real da API que retorna o ID da nova atividade
-            // const response = await fetch('/api/activities', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify(newActivityData)
-            // });
-            // const createdActivity = await response.json();
-
-            // Criar localmente (manter até ter API)
-            const newActivity = {
-                id: nextActivityId++, // TODO: Substituir pelo ID retornado da API
-                ...newActivityData
-            };
-
+            const createdActivity = await boardService.createActivity(listId, newActivityData);
             const targetList = projectData.lists.find(l => l.id === listId);
-            if (targetList) {
-                targetList.activities.push(newActivity);
+            if (targetList && createdActivity) {
+                targetList.activities.push({
+                    id: createdActivity.id,
+                    title: createdActivity.title,
+                    description: createdActivity.description,
+                    date: createdActivity.date,
+                    priority: createdActivity.priority,
+                    completed: createdActivity.completed || false,
+                    assignedUsers: createdActivity.assigned_user_ids || []
+                });
             }
         }
 
@@ -900,57 +762,23 @@ async function handleActivitySubmit(e) {
 async function handleListSubmit(e) {
     e.preventDefault();
 
-    const title = document.getElementById('listTitle').value;
+    const title = document.getElementById('listTitle').value.trim();
     const editingId = listForm.getAttribute('data-editing');
-
     try {
-        if (editingId) {
-            // EDITANDO LISTA EXISTENTE
-            // TODO: Substituir pela chamada real da API
-            // await fetch(`/api/lists/${editingId}`, {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify({ title })
-            // });
-
-            // Atualizar localmente (manter até ter API)
-            const list = projectData.lists.find(l => l.id === parseInt(editingId));
-            if (list) {
-                list.title = title;
-            }
-        } else {
-            // CRIANDO NOVA LISTA
-            const newListData = {
-                title,
-                projectId: getProjectIdFromURL()
-            };
-
-            // TODO: Substituir pela chamada real da API que retorna o ID da nova lista
-            // const response = await fetch('/api/lists', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify(newListData)
-            // });
-            // const createdList = await response.json();
-
-            // Criar localmente (manter até ter API)
-            const newList = {
-                id: nextListId++, // TODO: Substituir pelo ID retornado da API
-                title,
-                activities: []
-            };
-
-            projectData.lists.push(newList);
+        if (!title) {
+            alert('Digite o nome da lista.');
+            return;
         }
-
-        renderBoard();
+        const { boardService } = await import('../../services/boardService.js');
+        const projectId = getProjectIdFromURL();
+        if (!editingId) {
+            await boardService.createList(projectId, title);
+        } else {
+            // Edição de lista (não implementado no backend)
+        }
         closeListModal();
+        await loadProjectData(projectId);
+        renderBoard();
     } catch (error) {
         console.error('Erro ao salvar lista:', error);
         alert('Erro ao salvar lista. Tente novamente.');
@@ -961,27 +789,14 @@ async function handleListSubmit(e) {
 async function toggleActivityComplete(activityId) {
     try {
         let activity = null;
-
-        // Encontrar a atividade
         for (let list of projectData.lists) {
             activity = list.activities.find(a => a.id === activityId);
             if (activity) break;
         }
-
         if (activity) {
             const newStatus = !activity.completed;
-
-            // TODO: Substituir pela chamada real da API
-            // await fetch(`/api/activities/${activityId}/toggle-complete`, {
-            //     method: 'PUT',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`
-            //     },
-            //     body: JSON.stringify({ completed: newStatus })
-            // });
-
-            // Atualizar localmente (manter até ter API)
+            const { boardService } = await import('../../services/boardService.js');
+            await boardService.updateActivity(activityId, { completed: newStatus });
             activity.completed = newStatus;
             renderBoard();
         }
@@ -1008,12 +823,10 @@ function editActivity(activityId) {
     document.getElementById('activityList').value = list.id;
     document.getElementById('activityPriority').value = activity.priority || '';
 
-    // Marcar usuários atribuídos no grid
     setTimeout(() => {
         setSelectedUsers(activity.assignedUsers);
     }, 100);
 
-    // Converter data de volta para formato input se existir
     if (activity.date) {
         const [day, monthName] = activity.date.split(' de ');
         const monthMap = {
@@ -1031,7 +844,6 @@ function editActivity(activityId) {
     activityModal.style.display = 'block';
 }
 
-// Utility functions
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR', {
@@ -1046,7 +858,53 @@ function toggleMembersPopup() {
         if (popup.style.display === 'block') {
             closeMembersPopup();
         } else {
-            openMembersPopup();
+            const content = document.getElementById('membersPopupContent');
+            if (content) {
+                // Buscar membros da equipe do projeto no backend
+                (async () => {
+                    try {
+                        // Descobrir o teamId do projeto usando o novo endpoint
+                        const projectId = getProjectIdFromURL();
+                        const resTeam = await fetch(`${API_URL}/api/projects/${projectId}/team`);
+                        if (!resTeam.ok) {
+                            content.innerHTML = '<p style="color: #dc3545; font-style: italic; text-align: center;">Erro ao buscar equipe do projeto</p>';
+                            openMembersPopup();
+                            return;
+                        }
+                        const team = await resTeam.json();
+                        const teamId = team.id;
+                        if (!teamId) {
+                            content.innerHTML = '<p style="color: #6c757d; font-style: italic; text-align: center;">Projeto sem equipe associada</p>';
+                            openMembersPopup();
+                            return;
+                        }
+                        // Buscar membros da equipe
+                        const resMembros = await fetch(`${API_URL}/api/teams/${teamId}/members`);
+                        let membros = [];
+                        if (resMembros.ok) {
+                            membros = await resMembros.json();
+                        }
+                        // Exibir membros no modal
+                        if (membros.length > 0) {
+                            content.innerHTML = `
+                                <div class="members-popup-grid">
+                                    ${membros.map(membro => `
+                                        <div class="popup-member-chip">
+                                            <i class="fas fa-user"></i>
+                                            <span class="popup-member-name">${membro.name}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        } else {
+                            content.innerHTML = '<p style="color: #6c757d; font-style: italic; text-align: center;">Nenhum membro encontrado</p>';
+                        }
+                    } catch (err) {
+                        content.innerHTML = '<p style="color: #dc3545; font-style: italic; text-align: center;">Erro ao buscar membros</p>';
+                    }
+                    openMembersPopup();
+                })();
+            }
         }
     }
 }
@@ -1056,7 +914,6 @@ function openMembersPopup() {
     const content = document.getElementById('membersPopupContent');
 
     if (popup && content) {
-        // Renderizar membros
         if (projectData.members && projectData.members.length > 0) {
             const membersHTML = `
                 <div class="members-popup-grid">

@@ -1,4 +1,4 @@
-const IS_LOCAL = true; // Definido como true para usar o servidor local
+const IS_LOCAL = false; // Definido como true para usar o servidor local
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 let currentTeamId = null;
 let currentUserId = null;

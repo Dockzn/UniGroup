@@ -6,8 +6,10 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.use(authMiddleware);
 
-router.post('/', projectController.create);
 
+router.post('/', projectController.create);
 router.get('/', projectController.getUserProjects);
+
+router.get('/:projectId/team', projectController.getProjectTeam);
 
 module.exports = router;

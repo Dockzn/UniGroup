@@ -28,7 +28,7 @@ export class ProjectModal {
           const userObj = JSON.parse(user);
           if (userObj.team_id) {
             teamId = userObj.team_id;
-            const IS_LOCAL = true; 
+            const IS_LOCAL = false; 
             const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
             try {
               const res = await fetch(`${API_URL}/api/teams/${teamId}`);
@@ -124,7 +124,7 @@ export class ProjectModal {
       if (response && response.project && response.project.id) {
         alert('Projeto criado com sucesso!');
         this.close();
-        window.location.href = `../quadro/quadro.html?id=${response.project.id}`;
+        window.location.href = `../quadro/quadro.html?projectId=${response.project.id}`;
       } else {
         alert('Projeto criado, mas não foi possível redirecionar.');
         window.location.reload();
