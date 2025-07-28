@@ -84,7 +84,7 @@ if (criarEquipeBtn) {
           const userObj = JSON.parse(user);
           userObj.team_id = data.id;
           localStorage.setItem('user', JSON.stringify(userObj));
-        } catch (e) {}
+        } catch (e) { }
       }
       showMsg('msgCriarEquipe', 'Equipe criada!', false);
       document.getElementById('nomeEquipe').value = '';
