@@ -3,7 +3,7 @@
 body {
   padding: 0;
   margin: 0;
-  background-color: var(--color-background);
+  background-color: #f8fafc;
   color: var(--color-text);
   font-family: var(--font);
 }
@@ -85,144 +85,406 @@ body {
 
 .container {
   margin-top: 20px;
-  max-width: 1000px;
+  max-width: 1200px;
   height: auto;
-  margin: 0 auto;
+  margin: 20px auto;
   padding: 20px;
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 30px;
 }
 
 .colum1 {
-  background-color: rgb(226, 226, 226);
-    height: 300px;
-  width: 30%;
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  height: fit-content;
+  width: 280px;
+  padding: 0;
+  overflow: hidden;
 }
 
-.input-group {
+.container-menu {
+  padding: 20px 0;
+}
+
+.menu {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
-.input-group input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.input-group button {
-  padding: 8px 16px;
-  background-color: #003566;
-  color: white;
+.item-menu {
+  background-color: transparent;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  padding: 16px 24px;
+  text-align: left;
+  color: #475569;
+  font-weight: 500;
 }
 
-#mensagem-adicao {
-  margin-top: 10px;
-  font-size: 14px;
+.item-menu:hover {
+  background: linear-gradient(90deg, rgba(0, 53, 102, 0.08), rgba(0, 53, 102, 0.04));
+  color: #003566;
 }
 
-#mensagem-adicao.sucesso {
-  color: green;
+.item-menu.ativo {
+  background: var(--primary-color);
+  color: white;
 }
 
-#mensagem-adicao.erro {
-  color: red;
+.itens-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
 }
 
-
+.itens-menu i {
+  font-size: 18px;
+  width: 20px;
+}
 
 .colum2 {
+  flex: 1;
   height: 100%;
-  width: 70%;
-}
-
-.recentemente-vizualizado {
-  height: 250px;
-  padding: 10px;
 }
 
 .equipes {
-  height: 250px;
-  padding: 10px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  padding: 32px;
+  min-height: 600px;
 }
 
-ul{
-    display: flex;
-    flex-direction: column;
+.equipes h1 {
+  color: #1e293b;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-li {
-  list-style: none;
-  margin-top: 20px;
-  font-size: large;
+.equipes h1 i {
+  color: #003566;
+  font-size: 24px;
 }
 
-.item-menu{
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: large;
-    display: flex;
-    align-items: center;
-    transition: 0.5s ease;;
+#minha-equipe-info {
+  margin: 0 0 32px 0;
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 53, 102, 0.08);
+  border: 1px solid #bfdbfe;
 }
 
-.item-menu:hover{
-    background-color: #003566B2;
+#minha-equipe-info h2 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  color: #003566;
+  font-weight: 600;
+}
+
+#minha-equipe-nome {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+#minha-equipe-membros {
+  margin-top: 12px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.card-equipe {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  border: none;
+}
+
+.card-equipe h3 {
+  color: #1e293b;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  padding: 20px 24px 0 24px;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 16px;
 }
 
 #lista-membros {
   list-style: none;
-  padding: 0;
-  margin-top: 20px;
+  padding: 0 24px;
+  margin: 20px 0;
 }
 
 .membro-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.membro-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #003566;
 }
 
 .membro-avatar {
   display: inline-block;
-  margin-right: 10px;
+  margin-right: 12px;
   font-size: 1.2rem;
+  color: #003566;
 }
 
 .membro-nome {
   flex: 1;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.adicionar-email {
+  padding: 24px;
+  background: #fafbfc;
+  border-radius: 12px;
+  margin: 24px 0;
+  border: 1px solid #e2e8f0;
+}
+
+.adicionar-email h4 {
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.input-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.input-group input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #003566;
+  box-shadow: 0 0 0 3px rgba(0, 53, 102, 0.1);
+}
+
+.input-group button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #003566, #0066cc);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.input-group button:hover {
+  background: linear-gradient(135deg, #002a4d, #0052a3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
+}
+
+#mensagem-adicao {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+#mensagem-adicao.sucesso {
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+#mensagem-adicao.erro {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.convite-container {
+  padding: 24px;
+  background: linear-gradient(135deg, #fefce8, #fef9c3);
+  border-radius: 12px;
+  margin: 24px 0;
+  border: 1px solid #fde047;
+}
+
+.convite-container h4 {
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.convite-container p {
+  color: #475569;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+#botao-convidar {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#botao-convidar:hover {
+  background: linear-gradient(135deg, #d97706, #ea580c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+#mensagem-copiado {
+  margin-left: 12px;
+  color: #16a34a;
+  font-weight: 600;
+  background: #f0fdf4;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+}
+
+.criar-equipe-container {
+  max-width: 500px;
+  margin: 32px auto 0 auto;
+  padding: 32px;
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.criar-equipe-container h2 {
+  margin-top: 0;
+  color: #1e293b;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.criar-equipe-container h2 i {
+  color: #003566;
+}
+
+.criar-equipe-container p {
+  color: #dc2626;
+  margin: -8px 0 20px 0;
+  padding: 12px;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  font-size: 14px;
+}
+
+.criar-equipe-container>div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.criar-equipe-container input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.criar-equipe-container input:focus {
+  outline: none;
+  border-color: #003566;
+  box-shadow: 0 0 0 3px rgba(0, 53, 102, 0.1);
+}
+
+.criar-equipe-container button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #003566, #0066cc);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.criar-equipe-container button:hover {
+  background: linear-gradient(135deg, #002a4d, #0052a3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
+}
+
+#msgCriarEquipe {
+  margin-left: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
 }
 
 .no-team {
   text-align: center;
-  padding: 20px;
-  color: #666;
+  padding: 40px 20px;
+  color: #64748b;
   font-style: italic;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+  margin: 24px;
 }
 
-.convite-container {
-  margin-top: 30px;
-  padding: 15px;
-  background: #f3f3f3;
-  border-radius: 8px;
-}
-
-#botao-convidar {
-  margin-top: 10px;
-  padding: 8px 16px;
-  background-color: #e2f0ff;
-  border: 1px solid #0077cc;
-  border-radius: 6px;
-  cursor: pointer;
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  margin: 32px 0;
 }

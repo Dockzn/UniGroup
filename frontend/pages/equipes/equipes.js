@@ -1,4 +1,4 @@
-const IS_LOCAL = true; // Definido como true para usar o servidor local
+const IS_LOCAL = false; // Definido como true para usar o servidor local
 const API_URL = IS_LOCAL ? 'http://localhost:3000' : 'https://unigroup.onrender.com';
 let currentTeamId = null;
 let currentUserId = null;
@@ -84,7 +84,7 @@ if (criarEquipeBtn) {
           const userObj = JSON.parse(user);
           userObj.team_id = data.id;
           localStorage.setItem('user', JSON.stringify(userObj));
-        } catch (e) {}
+        } catch (e) { }
       }
       showMsg('msgCriarEquipe', 'Equipe criada!', false);
       document.getElementById('nomeEquipe').value = '';
