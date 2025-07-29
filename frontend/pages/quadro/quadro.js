@@ -126,11 +126,16 @@ function setupEventListeners() {
     if (favButton) {
         const projectId = getProjectIdFromURL();
         const currentUser = JSON.parse(localStorage.getItem('user'));
+        const favIcon = favButton.querySelector('i');
 
         // Define o estado inicial do botão
         const favorites = JSON.parse(localStorage.getItem(`favorites_${currentUser.id}`) || '[]');
         if (favorites.includes(Number(projectId))) {
             favButton.classList.add('active');
+            favIcon.className = 'fas fa-star'; // Estrela preenchida
+        } else {
+            favButton.classList.remove('active');
+            favIcon.className = 'far fa-star'; // Estrela com contorno
         }
 
         // Adiciona o evento de clique
@@ -140,11 +145,15 @@ function setupEventListeners() {
             const index = favorites.indexOf(projectIdNum);
 
             if (index > -1) {
+                // Remove dos favoritos
                 favorites.splice(index, 1);
                 favButton.classList.remove('active');
+                favIcon.className = 'far fa-star'; // Estrela com contorno
             } else {
+                // Adiciona aos favoritos
                 favorites.push(projectIdNum);
                 favButton.classList.add('active');
+                favIcon.className = 'fas fa-star'; // Estrela preenchida
             }
             localStorage.setItem(`favorites_${currentUser.id}`, JSON.stringify(favorites));
         });

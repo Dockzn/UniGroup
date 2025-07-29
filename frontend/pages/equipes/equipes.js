@@ -5,55 +5,50 @@ let currentUserId = null;
 
 window.addEventListener('DOMContentLoaded', async () => {
   const user = localStorage.getItem('user');
-  const infoDiv = document.getElementById('minha-equipe-info');
   if (user) {
     try {
       const userObj = JSON.parse(user);
       currentUserId = userObj.id;
       if (userObj.team_id) {
         currentTeamId = userObj.team_id;
-        await exibirMinhaEquipe(userObj.team_id);
+        await exibirNomeEquipe(userObj.team_id); // Nova função
+        await loadMembers();
       } else {
-        if (infoDiv) {
-          infoDiv.style.display = 'block';
-          document.getElementById('minha-equipe-nome').textContent = '';
-          document.getElementById('minha-equipe-membros').innerHTML = '<span style="color:#888">Você ainda não está em nenhuma equipe.</span>';
-        }
+        // Sem equipe - mostrar nome padrão
+        atualizarTituloEquipe('Equipe');
+        loadMembers(); // Vai mostrar 0 membros
       }
     } catch (e) {
       currentUserId = null;
-      if (infoDiv) infoDiv.style.display = 'none';
+      atualizarTituloEquipe('Equipe');
+      loadMembers();
     }
   } else {
-    if (infoDiv) infoDiv.style.display = 'none';
+    atualizarTituloEquipe('Equipe');
+    loadMembers();
   }
 });
 
-async function exibirMinhaEquipe(teamId) {
+// 🆕 Nova função para buscar só o nome da equipe
+async function exibirNomeEquipe(teamId) {
   try {
     const resTeam = await fetch(`${API_URL}/api/teams/${teamId}`);
-    let teamName = '';
     if (resTeam.ok) {
       const team = await resTeam.json();
-      teamName = team.name || '';
-    }
-
-    const resMembros = await fetch(`${API_URL}/api/teams/${teamId}/members`);
-    let membros = [];
-    if (resMembros.ok) {
-      membros = await resMembros.json();
-    }
-
-    const infoDiv = document.getElementById('minha-equipe-info');
-    if (infoDiv) {
-      infoDiv.style.display = 'block';
-      document.getElementById('minha-equipe-nome').textContent = `Nome: ${teamName}`;
-      document.getElementById('minha-equipe-membros').innerHTML =
-        `<b>Total de membros:</b> ${membros.length}<br><b>Nomes:</b> ${membros.map(m => m.name).join(', ')}`;
+      atualizarTituloEquipe(team.name || 'Equipe');
+    } else {
+      atualizarTituloEquipe('Equipe');
     }
   } catch (e) {
-    const infoDiv = document.getElementById('minha-equipe-info');
-    if (infoDiv) infoDiv.style.display = 'none';
+    atualizarTituloEquipe('Equipe');
+  }
+}
+
+// 🆕 Função para atualizar o título dinamicamente
+function atualizarTituloEquipe(nomeEquipe) {
+  const titulo = document.querySelector('.equipes h1');
+  if (titulo) {
+    titulo.innerHTML = `<i class="fa-solid fa-user-group"></i> ${nomeEquipe}`;
   }
 }
 
@@ -82,10 +77,12 @@ if (criarEquipeBtn) {
           localStorage.setItem('user', JSON.stringify(userObj));
         } catch (e) { }
       }
-      showMsg('msgCriarEquipe', 'Equipe criada!', false);
+      showMsg('msgCriarEquipe', 'Equipe criada com sucesso!', false);
       document.getElementById('nomeEquipe').value = '';
-      await exibirMinhaEquipe(data.id);
-      loadMembers();
+
+      // Atualizar título e membros
+      atualizarTituloEquipe(name);
+      await loadMembers();
     } catch (e) {
       showMsg('msgCriarEquipe', 'Erro de conexão com o servidor', true);
     }
@@ -110,9 +107,11 @@ if (botaoAdicionar) {
         showMsg('mensagem-adicao', data.error || 'Erro ao adicionar membro', true);
         return;
       }
-      showMsg('mensagem-adicao', 'Membro adicionado!', false);
+      showMsg('mensagem-adicao', 'Membro adicionado com sucesso!', false);
       document.getElementById('email-membro').value = '';
-      setTimeout(() => { window.location.reload(); }, 1000);
+
+      await loadMembers();
+
     } catch (e) {
       showMsg('mensagem-adicao', 'Erro de conexão com o servidor', true);
     }
@@ -128,10 +127,16 @@ async function loadMembers() {
 
   try {
     const res = await fetch(`${API_URL}/api/teams/${currentTeamId}/members`);
-    if (!res.ok) return;
+    if (!res.ok) {
+      document.getElementById('lista-membros').innerHTML = '';
+      document.getElementById('total-membros').textContent = '0';
+      return;
+    }
+
     const users = await res.json().catch(() => []);
     const ul = document.getElementById('lista-membros');
     ul.innerHTML = '';
+
     users.forEach(u => {
       const li = document.createElement('li');
       li.className = 'membro-item';
@@ -141,9 +146,12 @@ async function loadMembers() {
       `;
       ul.appendChild(li);
     });
+
     document.getElementById('total-membros').textContent = users.length;
   } catch (e) {
     console.error('Erro ao carregar membros:', e);
+    document.getElementById('lista-membros').innerHTML = '';
+    document.getElementById('total-membros').textContent = '0';
   }
 }
 

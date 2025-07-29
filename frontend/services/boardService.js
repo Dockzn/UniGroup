@@ -30,14 +30,14 @@ export const boardService = {
 
   async createList(projectId, name) {
     try {
-      const response = await fetch(`${API_URL}/api/lists`, {
+      // CORREÇÃO: Usar a rota correta que existe no backend
+      const response = await fetch(`${API_URL}/api/projects/${projectId}/lists`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name,
-          project_id: projectId
+          name
         })
       });
 
@@ -92,15 +92,13 @@ export const boardService = {
 
   async createActivity(listId, activityData) {
     try {
-      const response = await fetch(`${API_URL}/api/activities`, {
+      // CORREÇÃO: Usar a rota correta que existe no backend
+      const response = await fetch(`${API_URL}/api/lists/${listId}/activities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...activityData,
-          list_id: listId
-        })
+        body: JSON.stringify(activityData)
       });
 
       if (!response.ok) {

@@ -30,7 +30,7 @@ function showWelcomeMessage() {
     welcomeContainer.className = 'welcome-message';
     welcomeContainer.innerHTML = `
 <h2>Bem-vindo, ${currentUser ? currentUser.name : 'Usuário'}!</h2>
-<p>Este é seu painel de gerenciamento de projetos e equipes.</p>
+<p>Este é seu painel de gerenciamento de projetos.</p>
 `;
     const column2 = document.querySelector('.colum2');
     column2.insertBefore(welcomeContainer, column2.firstChild);

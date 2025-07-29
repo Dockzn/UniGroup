@@ -66,8 +66,14 @@ body {
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* Estado padrão: estrela com contorno (far fa-star) */
+.btn-favorite {
+    color: white;
+}
+
+/* Estado ativo: estrela preenchida (fas fa-star) */
 .btn-favorite.active {
-    color: #ffd700;
+    color: white;
 }
 
 .btn-share,

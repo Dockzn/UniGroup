@@ -189,4 +189,22 @@ const projectController = {
     }
 };
 
-module.exports = projectController;
+getById: async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const project = await db.Project.findByPk(projectId);
+
+        if (!project) {
+            return res.status(404).json({ error: 'Projeto não encontrado' });
+        }
+
+        res.json(project);
+    } catch (error) {
+        res.status(500).json({
+            message: 'Erro ao buscar projeto',
+            error: error.message
+        });
+    }
+},
+
+    module.exports = projectController;

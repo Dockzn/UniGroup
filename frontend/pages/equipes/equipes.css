@@ -183,33 +183,8 @@ body {
   font-size: 24px;
 }
 
-#minha-equipe-info {
-  margin: 0 0 32px 0;
-  padding: 24px;
-  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 53, 102, 0.08);
-  border: 1px solid #bfdbfe;
-}
-
-#minha-equipe-info h2 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  color: #003566;
-  font-weight: 600;
-}
-
-#minha-equipe-nome {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 16px;
-}
-
-#minha-equipe-membros {
-  margin-top: 12px;
-  color: #475569;
-  line-height: 1.6;
-}
+/* REMOVER COMPLETAMENTE - não precisamos mais */
+/* #minha-equipe-info styles removidos */
 
 .card-equipe {
   background: white;
@@ -267,7 +242,9 @@ body {
   color: #1e293b;
 }
 
-.adicionar-email {
+/* Estilos consistentes para adicionar-email e criar-equipe */
+.adicionar-email,
+.criar-equipe {
   padding: 24px;
   background: #fafbfc;
   border-radius: 12px;
@@ -275,11 +252,24 @@ body {
   border: 1px solid #e2e8f0;
 }
 
-.adicionar-email h4 {
+.adicionar-email h4,
+.criar-equipe h4 {
   color: #1e293b;
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 16px 0;
+}
+
+/* Estilo do aviso para criar equipe */
+.criar-equipe-aviso {
+  color: #dc2626;
+  margin: 0 0 20px 0;
+  padding: 12px;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .input-group {
@@ -313,6 +303,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .input-group button:hover {
@@ -321,106 +312,33 @@ body {
   box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
 }
 
-#mensagem-adicao {
+/* Estilos consistentes para mensagens */
+#mensagem-adicao,
+#msgCriarEquipe {
   margin-top: 12px;
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px;
   border-radius: 6px;
+  display: block !important;
 }
 
-#mensagem-adicao.sucesso {
+#mensagem-adicao.sucesso,
+#msgCriarEquipe.sucesso {
   color: #16a34a;
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
 }
 
-#mensagem-adicao.erro {
+#mensagem-adicao.erro,
+#msgCriarEquipe.erro {
   color: #dc2626;
   background: #fef2f2;
   border: 1px solid #fecaca;
 }
 
-
-
-.criar-equipe-container {
-  max-width: 500px;
-  margin: 32px auto 0 auto;
-  padding: 32px;
-  background: linear-gradient(135deg, #ffffff, #f8fafc);
-  border-radius: 16px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-}
-
-.criar-equipe-container h2 {
-  margin-top: 0;
-  color: #1e293b;
-  font-size: 22px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.criar-equipe-container h2 i {
-  color: #003566;
-}
-
-.criar-equipe-container p {
-  color: #dc2626;
-  margin: -8px 0 20px 0;
-  padding: 12px;
-  background: #fef2f2;
-  border-radius: 8px;
-  border: 1px solid #fecaca;
-  font-size: 14px;
-}
-
-.criar-equipe-container>div {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.criar-equipe-container input {
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 2px solid #e2e8f0;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.criar-equipe-container input:focus {
-  outline: none;
-  border-color: #003566;
-  box-shadow: 0 0 0 3px rgba(0, 53, 102, 0.1);
-}
-
-.criar-equipe-container button {
-  padding: 12px 24px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.criar-equipe-container button:hover {
-  background: var(--secundary-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 53, 102, 0.3);
-}
-
-#msgCriarEquipe {
-  margin-left: 12px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 6px;
-}
+/* REMOVER COMPLETAMENTE - estilos antigos do criar-equipe-container */
+/* .criar-equipe-container styles removidos */
 
 .no-team {
   text-align: center;
